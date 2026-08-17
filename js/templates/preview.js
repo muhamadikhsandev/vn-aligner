@@ -124,7 +124,7 @@ export const previewHTML = `
     <div class="flex-1 flex w-full h-full min-h-0 relative overflow-hidden">
       <!-- Canvas Area -->
       <div class="flex-1 relative flex items-center justify-center overflow-hidden">
-        <div x-show="!hasAssets && bgType === 'transparent'" class="absolute inset-0 flex flex-col items-center justify-center text-center p-2 z-10 pointer-events-none">
+        <div x-show="bodyAssetList.length === 0 && faceAssetList.length === 0 && bgType === 'transparent'" class="absolute inset-0 flex flex-col items-center justify-center text-center p-2 z-10 pointer-events-none">
           <i data-lucide="layers" class="w-8 h-8 text-slate-400 mb-2 opacity-60"></i>
           <p class="text-slate-300 text-xs font-medium max-w-[200px] bg-slate-950/90 px-3 py-1.5 rounded-lg border border-slate-800 backdrop-blur">Upload foto badan &amp; aset wajah atau atasi BG canvas</p>
         </div>
@@ -165,6 +165,217 @@ export const previewHTML = `
       <button @click="resetCameraPan()" class="p-1 bg-slate-800 hover:bg-slate-600 text-slate-400 hover:text-slate-100 border border-slate-700/60 rounded-lg cursor-pointer transition-all flex items-center justify-center ml-0.5" title="Reset ke Center">
         <i data-lucide="crosshair" class="w-3.5 h-3.5"></i>
       </button>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM CAROUSEL THUMB BAR WITH QUICK INPUTS & LIVE PERCENTAGES -->
+  <div x-show="bodyAssetList.length > 0 || faceAssetList.length > 0" class="w-full bg-slate-900/90 border border-slate-800 rounded-xl p-1.5 mt-1 shrink-0 flex flex-col gap-1.5 z-20">
+
+    <!-- BADAN CAROUSEL -->
+    <div x-show="bodyAssetList.length > 0" class="flex flex-col gap-1">
+      <div class="flex items-center justify-between text-[10px] text-slate-400 px-1">
+        <div class="flex items-center gap-1.5">
+          <span class="font-medium text-blue-300 flex items-center gap-1">
+            <i data-lucide="user" class="w-3.5 h-3.5 text-blue-400"></i> Badan
+          </span>
+          <button @click="togglePlayBody()" class="px-2 py-0.5 rounded text-[9px] font-semibold text-white cursor-pointer"
+                  :class="isPlayingBody ? 'bg-rose-600 animate-pulse' : 'bg-blue-700'">
+            <span x-text="isPlayingBody ? 'Stop' : 'Play'"></span>
+          </button>
+        </div>
+        <span class="font-mono text-blue-400 font-bold" x-text="(activeBodyIndex + 1) + '/' + bodyAssetList.length"></span>
+      </div>
+
+      <!-- Quick-input bar for active body -->
+      <div class="flex items-center gap-1.5 px-1 flex-wrap" @click.stop>
+        <label class="flex items-center gap-0.5">
+          <span class="text-[9px] font-bold text-blue-400 shrink-0">Skala%</span>
+          <input type="number"
+                 :value="currentBodyTransform ? currentBodyTransform.scale : 100"
+                 @change.stop="activeTarget='body'; updateBodyTransform('scale', $event.target.value); pushHistoryState()"
+                 @click.stop
+                 class="w-14 text-[9px] font-mono bg-blue-950/80 border border-blue-700/60 text-blue-200 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-blue-400"
+                 min="1" max="5000" step="1" />
+        </label>
+        <label class="flex items-center gap-0.5">
+          <span class="text-[9px] font-bold text-slate-400 shrink-0">X</span>
+          <input type="number"
+                 :value="currentBodyTransform ? currentBodyTransform.offsetX : 0"
+                 @change.stop="activeTarget='body'; updateBodyTransform('offsetX', $event.target.value); pushHistoryState()"
+                 @click.stop
+                 class="w-14 text-[9px] font-mono bg-slate-800/80 border border-slate-700/60 text-slate-200 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-blue-400"
+                 min="-3000" max="3000" step="1" />
+        </label>
+        <label class="flex items-center gap-0.5">
+          <span class="text-[9px] font-bold text-slate-400 shrink-0">Y</span>
+          <input type="number"
+                 :value="currentBodyTransform ? currentBodyTransform.offsetY : 0"
+                 @change.stop="activeTarget='body'; updateBodyTransform('offsetY', $event.target.value); pushHistoryState()"
+                 @click.stop
+                 class="w-14 text-[9px] font-mono bg-slate-800/80 border border-slate-700/60 text-slate-200 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-blue-400"
+                 min="-3000" max="3000" step="1" />
+        </label>
+        <label class="flex items-center gap-0.5">
+          <span class="text-[9px] font-bold text-indigo-400 shrink-0">°</span>
+          <input type="number"
+                 :value="currentBodyTransform ? currentBodyTransform.rotation : 0"
+                 @change.stop="activeTarget='body'; updateBodyTransform('rotation', $event.target.value); pushHistoryState()"
+                 @click.stop
+                 class="w-14 text-[9px] font-mono bg-indigo-950/80 border border-indigo-700/60 text-indigo-200 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                 min="-180" max="180" step="1" />
+        </label>
+      </div>
+
+      <!-- Thumbnail strip -->
+      <div class="flex items-end gap-2 overflow-x-auto pb-1 px-1 no-scrollbar">
+        <template x-for="(item, index) in bodyAssetList" :key="item.id">
+          <div @click="selectBody(index)"
+               class="relative flex-shrink-0 border cursor-pointer rounded-lg overflow-hidden bg-slate-950 flex flex-col items-center transition-all min-w-[56px]"
+               :class="index === activeBodyIndex ? 'border-blue-400 ring-2 ring-blue-500/50 scale-105' : 'border-slate-800 opacity-55 hover:opacity-80'">
+            <div class="w-12 h-12 overflow-hidden">
+              <img :src="item.thumb" class="w-full h-full object-cover" />
+            </div>
+            <div class="w-full bg-slate-900/95 px-0.5 pt-0.5 pb-0.5 flex flex-col gap-px">
+              <template x-if="index === activeBodyIndex">
+                <div class="flex items-center gap-0.5" @click.stop>
+                  <span class="text-[7px] text-blue-400 font-bold shrink-0">%</span>
+                  <input type="number"
+                         :value="bodyMode === 'global' ? globalBodyTransform.scale : (item.transform ? item.transform.scale : 100)"
+                         @change.stop="activeTarget='body'; updateBodyTransform('scale', $event.target.value); pushHistoryState()"
+                         @click.stop
+                         class="w-full text-[9px] font-mono bg-blue-950/80 border border-blue-700/60 text-blue-200 rounded px-0.5 py-px text-center focus:outline-none focus:ring-1 focus:ring-blue-400"
+                         min="1" max="5000" step="1" />
+                </div>
+              </template>
+              <template x-if="index !== activeBodyIndex">
+                <div class="text-center">
+                  <span class="text-[8px] font-mono text-blue-400 font-bold"
+                        x-text="(bodyMode === 'global' ? globalBodyTransform.scale : (item.transform ? item.transform.scale : 100)) + '%'"></span>
+                </div>
+              </template>
+              <div class="flex items-center justify-center gap-1">
+                <span class="text-[7px] font-mono text-slate-500"
+                      x-text="'X' + (bodyMode === 'global' ? globalBodyTransform.offsetX : (item.transform ? item.transform.offsetX : 0))"></span>
+                <span class="text-[7px] font-mono text-slate-500"
+                      x-text="'Y' + (bodyMode === 'global' ? globalBodyTransform.offsetY : (item.transform ? item.transform.offsetY : 0))"></span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- WAJAH CAROUSEL -->
+    <div x-show="faceAssetList.length > 0" class="flex flex-col gap-1">
+      <div class="flex items-center justify-between text-[10px] text-slate-400 px-1">
+        <div class="flex items-center gap-1.5">
+          <span class="font-medium text-emerald-300 flex items-center gap-1">
+            <i data-lucide="smile" class="w-3.5 h-3.5 text-emerald-400"></i> Wajah
+          </span>
+          <button @click="togglePlayFace()" class="px-2 py-0.5 rounded text-[9px] font-semibold text-white cursor-pointer"
+                  :class="isPlayingFace ? 'bg-rose-600 animate-pulse' : 'bg-emerald-700'">
+            <span x-text="isPlayingFace ? 'Stop' : 'Play'"></span>
+          </button>
+        </div>
+        <span class="font-mono text-emerald-400 font-bold" x-text="(activeFaceIndex + 1) + '/' + faceAssetList.length"></span>
+      </div>
+
+      <!-- Quick-input bar for active face -->
+      <div class="flex items-center gap-1.5 px-1 flex-wrap" @click.stop>
+        <label class="flex items-center gap-0.5">
+          <span class="text-[9px] font-bold text-emerald-400 shrink-0">Skala%</span>
+          <input type="number"
+                 :value="currentFaceTransform ? currentFaceTransform.scale : 100"
+                 @change.stop="activeTarget='face'; updateFaceTransform('scale', $event.target.value); pushHistoryState()"
+                 @click.stop
+                 class="w-14 text-[9px] font-mono bg-emerald-950/80 border border-emerald-700/60 text-emerald-200 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                 min="1" max="5000" step="1" />
+        </label>
+        <label class="flex items-center gap-0.5">
+          <span class="text-[9px] font-bold text-slate-400 shrink-0">X</span>
+          <input type="number"
+                 :value="currentFaceTransform ? currentFaceTransform.offsetX : 0"
+                 @change.stop="activeTarget='face'; updateFaceTransform('offsetX', $event.target.value); pushHistoryState()"
+                 @click.stop
+                 class="w-14 text-[9px] font-mono bg-slate-800/80 border border-slate-700/60 text-slate-200 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                 min="-3000" max="3000" step="1" />
+        </label>
+        <label class="flex items-center gap-0.5">
+          <span class="text-[9px] font-bold text-slate-400 shrink-0">Y</span>
+          <input type="number"
+                 :value="currentFaceTransform ? currentFaceTransform.offsetY : 0"
+                 @change.stop="activeTarget='face'; updateFaceTransform('offsetY', $event.target.value); pushHistoryState()"
+                 @click.stop
+                 class="w-14 text-[9px] font-mono bg-slate-800/80 border border-slate-700/60 text-slate-200 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                 min="-3000" max="3000" step="1" />
+        </label>
+        <label class="flex items-center gap-0.5">
+          <span class="text-[9px] font-bold text-pink-400 shrink-0">SX%</span>
+          <input type="number"
+                 :value="currentFaceTransform && currentFaceTransform.stretchX !== undefined ? currentFaceTransform.stretchX : 100"
+                 @change.stop="activeTarget='face'; updateFaceTransform('stretchX', $event.target.value); pushHistoryState()"
+                 @click.stop
+                 class="w-14 text-[9px] font-mono bg-pink-950/80 border border-pink-700/60 text-pink-200 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-pink-400"
+                 min="10" max="500" step="1" />
+        </label>
+        <label class="flex items-center gap-0.5">
+          <span class="text-[9px] font-bold text-pink-400 shrink-0">SY%</span>
+          <input type="number"
+                 :value="currentFaceTransform && currentFaceTransform.stretchY !== undefined ? currentFaceTransform.stretchY : 100"
+                 @change.stop="activeTarget='face'; updateFaceTransform('stretchY', $event.target.value); pushHistoryState()"
+                 @click.stop
+                 class="w-14 text-[9px] font-mono bg-pink-950/80 border border-pink-700/60 text-pink-200 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-pink-400"
+                 min="10" max="500" step="1" />
+        </label>
+        <label class="flex items-center gap-0.5">
+          <span class="text-[9px] font-bold text-indigo-400 shrink-0">°</span>
+          <input type="number"
+                 :value="currentFaceTransform ? currentFaceTransform.rotation : 0"
+                 @change.stop="activeTarget='face'; updateFaceTransform('rotation', $event.target.value); pushHistoryState()"
+                 @click.stop
+                 class="w-14 text-[9px] font-mono bg-indigo-950/80 border border-indigo-700/60 text-indigo-200 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                 min="-180" max="180" step="1" />
+        </label>
+      </div>
+
+      <!-- Thumbnail strip -->
+      <div class="flex items-end gap-2 overflow-x-auto pb-1 px-1 no-scrollbar">
+        <template x-for="(item, index) in faceAssetList" :key="item.id">
+          <div @click="selectFace(index)"
+               class="relative flex-shrink-0 border cursor-pointer rounded-lg overflow-hidden bg-slate-950 flex flex-col items-center transition-all min-w-[56px]"
+               :class="index === activeFaceIndex ? 'border-emerald-500 ring-2 ring-emerald-500/50 scale-105' : 'border-slate-800 opacity-55 hover:opacity-80'">
+            <div class="w-12 h-12 overflow-hidden">
+              <img :src="item.thumb" class="w-full h-full object-cover" />
+            </div>
+            <div class="w-full bg-slate-900/95 px-0.5 pt-0.5 pb-0.5 flex flex-col gap-px">
+              <template x-if="index === activeFaceIndex">
+                <div class="flex items-center gap-0.5" @click.stop>
+                  <span class="text-[7px] text-emerald-400 font-bold shrink-0">%</span>
+                  <input type="number"
+                         :value="faceMode === 'global' ? globalFaceTransform.scale : (item.transform ? item.transform.scale : 100)"
+                         @change.stop="activeTarget='face'; updateFaceTransform('scale', $event.target.value); pushHistoryState()"
+                         @click.stop
+                         class="w-full text-[9px] font-mono bg-emerald-950/80 border border-emerald-700/60 text-emerald-200 rounded px-0.5 py-px text-center focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                         min="1" max="5000" step="1" />
+                </div>
+              </template>
+              <template x-if="index !== activeFaceIndex">
+                <div class="text-center">
+                  <span class="text-[8px] font-mono text-emerald-400 font-bold"
+                        x-text="(faceMode === 'global' ? globalFaceTransform.scale : (item.transform ? item.transform.scale : 100)) + '%'"></span>
+                </div>
+              </template>
+              <div class="flex items-center justify-center gap-1">
+                <span class="text-[7px] font-mono text-slate-500"
+                      x-text="'X' + (faceMode === 'global' ? globalFaceTransform.offsetX : (item.transform ? item.transform.offsetX : 0))"></span>
+                <span class="text-[7px] font-mono text-slate-500"
+                      x-text="'Y' + (faceMode === 'global' ? globalFaceTransform.offsetY : (item.transform ? item.transform.offsetY : 0))"></span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
     </div>
 
   </div>

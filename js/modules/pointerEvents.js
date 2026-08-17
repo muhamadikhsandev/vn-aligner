@@ -145,10 +145,10 @@ export const pointerEventsActions = {
     for (const key of keys) {
       const h = handles[key];
       const dist = Math.hypot(pos.x - h.x, pos.y - h.y);
-      // Tighter hit radius for edge side handles (n, s, w, e) so dragging near sides moves the asset instead of accidentally stretching width ("kepnecet melebar")
+      // Smooth hit radius for corner circle handles (perkecil/skala) and side circle handles (perlebar)
       const hitRadius = h.isCorner 
-        ? Math.max(34, 34 * scaleRatio) 
-        : Math.max(14, 14 * scaleRatio);
+        ? Math.max(32, 32 * scaleRatio) 
+        : Math.max(24, 24 * scaleRatio);
       if (dist <= hitRadius) {
         return h;
       }
@@ -189,27 +189,41 @@ export const pointerEventsActions = {
     const faceRect = this.getCurrentFaceRect();
     const bodyRect = this.getCurrentBodyRect();
 
-    // 0. Check Template Contour Point Hit (Mode Shape Face / Cetak Bentuk Wajah)
+    // 0. Direct Pull Gesture Warp Mode (Gesture Tarik Bebas di Desktop & Mobile tanpa perlu Kotak Titik)
     if ((this.activeTab === 'shapeFace' || this.isEditingTemplate) && faceRect) {
-      const reshape = this.currentFaceTransform.reshape;
-      const points = (reshape && Array.isArray(reshape.templatePoints)) ? reshape.templatePoints : [];
-      const hitRadius = 52;
-      for (let i = 0; i < points.length; i++) {
-        const pt = points[i];
-        const px = faceRect.x + pt.u * faceRect.w;
-        const py = faceRect.y + pt.v * faceRect.h;
-        if (Math.hypot(pos.x - px, pos.y - py) <= hitRadius) {
-          this.activeTarget = 'face';
-          this.selectedContourPointIndex = i;
-          this.activePointIndex = i;
-          this.dragMode = 'template_point';
-          this.isDragging = true;
-          this.dragStartX = pos.x;
-          this.dragStartY = pos.y;
-          if (reshape) reshape.useTemplate = true;
-          this.renderPreview();
-          return;
+      const u0 = (pos.x - faceRect.x) / faceRect.w;
+      const v0 = (pos.y - faceRect.y) / faceRect.h;
+
+      if (u0 >= -0.25 && u0 <= 1.25 && v0 >= -0.25 && v0 <= 1.25) {
+        const trans = this.currentFaceTransform;
+        if (!trans.reshape) trans.reshape = {};
+        if (!Array.isArray(trans.reshape.templatePoints) || trans.reshape.templatePoints.length === 0) {
+          trans.reshape.templatePoints = [
+            { id: 0, u: 0.50, v: 0.05, label: 'Dahi Atas' },
+            { id: 1, u: 0.72, v: 0.12, label: 'Pelipis Kanan' },
+            { id: 2, u: 0.88, v: 0.28, label: 'Tulang Pipi Atas Kanan' },
+            { id: 3, u: 0.95, v: 0.50, label: 'Pipi Kanan' },
+            { id: 4, u: 0.85, v: 0.73, label: 'Rahang Kanan' },
+            { id: 5, u: 0.65, v: 0.90, label: 'Sisi Dagu Kanan' },
+            { id: 6, u: 0.50, v: 0.96, label: 'Ujung Dagu' },
+            { id: 7, u: 0.35, v: 0.90, label: 'Sisi Dagu Kiri' },
+            { id: 8, u: 0.15, v: 0.73, label: 'Rahang Kiri' },
+            { id: 9, u: 0.05, v: 0.50, label: 'Pipi Kiri' },
+            { id: 10, u: 0.12, v: 0.28, label: 'Tulang Pipi Atas Kiri' },
+            { id: 11, u: 0.28, v: 0.12, label: 'Pelipis Kiri' }
+          ];
         }
+        trans.reshape.useTemplate = true;
+
+        this.activeTarget = 'face';
+        this.dragMode = 'pull_warp';
+        this.isDragging = true;
+        this.warpStartPos = { x: pos.x, y: pos.y };
+        this.warpStartU = u0;
+        this.warpStartV = v0;
+        this.initialTemplatePoints = JSON.parse(JSON.stringify(trans.reshape.templatePoints));
+        this.renderPreview();
+        return;
       }
     }
 
@@ -316,31 +330,13 @@ export const pointerEventsActions = {
       const faceRect = this.getCurrentFaceRect();
       const bodyRect = this.getCurrentBodyRect();
 
-      // Check hover template points first
+      // Direct Pull Gesture Hover Cursor in shapeFace Mode
       if ((this.activeTab === 'shapeFace' || this.isEditingTemplate) && faceRect) {
-        const reshape = this.currentFaceTransform.reshape;
-        const points = (reshape && Array.isArray(reshape.templatePoints)) ? reshape.templatePoints : [];
-        let hitPointIdx = null;
-        for (let i = 0; i < points.length; i++) {
-          const pt = points[i];
-          const px = faceRect.x + pt.u * faceRect.w;
-          const py = faceRect.y + pt.v * faceRect.h;
-          if (Math.hypot(pos.x - px, pos.y - py) <= 36) {
-            hitPointIdx = i;
-            break;
-          }
-        }
-        if (hitPointIdx !== null) {
+        const u0 = (pos.x - faceRect.x) / faceRect.w;
+        const v0 = (pos.y - faceRect.y) / faceRect.h;
+        if (u0 >= -0.25 && u0 <= 1.25 && v0 >= -0.25 && v0 <= 1.25) {
           if (canvas) canvas.style.cursor = 'grab';
-          if (this.hoveredContourPointIndex !== hitPointIdx) {
-            this.hoveredContourPointIndex = hitPointIdx;
-            this.renderPreview();
-          }
           return;
-        } else if (this.hoveredContourPointIndex !== null) {
-          this.hoveredContourPointIndex = null;
-          if (canvas) canvas.style.cursor = '';
-          this.renderPreview();
         }
       }
 
@@ -365,16 +361,29 @@ export const pointerEventsActions = {
 
     if (!this.isDragging || this.isLocked) return;
 
-    // MODE TEMPLATE POINT DRAGGING
-    if (this.dragMode === 'template_point') {
+    // MODE GESTURE TARIK / PULL WARP DEFORMASI WAJAH (DESKTOP & MOBILE)
+    if (this.dragMode === 'pull_warp') {
       const faceRect = this.getCurrentFaceRect();
-      if (faceRect && this.activePointIndex !== null) {
+      if (faceRect && this.initialTemplatePoints) {
+        const totalDu = (pos.x - this.warpStartPos.x) / faceRect.w;
+        const totalDv = (pos.y - this.warpStartPos.y) / faceRect.h;
+
         const reshape = this.currentFaceTransform.reshape;
-        if (reshape && Array.isArray(reshape.templatePoints) && reshape.templatePoints[this.activePointIndex]) {
-          const newU = Math.max(-0.2, Math.min(1.2, (pos.x - faceRect.x) / faceRect.w));
-          const newV = Math.max(-0.2, Math.min(1.2, (pos.y - faceRect.y) / faceRect.h));
-          reshape.templatePoints[this.activePointIndex].u = newU;
-          reshape.templatePoints[this.activePointIndex].v = newV;
+        if (reshape && Array.isArray(reshape.templatePoints)) {
+          const pullRadius = 0.38;
+          reshape.templatePoints = this.initialTemplatePoints.map(initPt => {
+            const dist = Math.hypot(initPt.u - this.warpStartU, initPt.v - this.warpStartV);
+            let weight = 0;
+            if (dist < pullRadius) {
+              // Smooth Cosine falloff curve
+              weight = Math.cos((dist / pullRadius) * (Math.PI / 2));
+            }
+            return {
+              ...initPt,
+              u: Math.max(-0.35, Math.min(1.35, initPt.u + totalDu * weight)),
+              v: Math.max(-0.35, Math.min(1.35, initPt.v + totalDv * weight))
+            };
+          });
           reshape.useTemplate = true;
           this.renderPreview();
         }

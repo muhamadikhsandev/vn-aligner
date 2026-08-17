@@ -161,72 +161,14 @@ export function drawTemplateContourOverlay(ctx, appState) {
     return;
   }
 
-  const faceRect = appState.getCurrentFaceRect();
-  if (!faceRect) return;
-
-  const points = reshape.templatePoints && reshape.templatePoints.length > 0
-    ? reshape.templatePoints
-    : [];
-
-  if (points.length === 0) return;
-
-  ctx.save();
-
-  // Convert points to pixel coordinates
-  const ptsPx = points.map(p => ({
-    x: Math.round(faceRect.x + p.u * faceRect.w),
-    y: Math.round(faceRect.y + p.v * faceRect.h),
-    label: p.label || ''
-  }));
-
-  // Interactive control point handles (EXTRA LARGE SQUARE HANDLES FOR FREEFORM FACE SHAPING)
-  ctx.setLineDash([]);
-  ptsPx.forEach((pt, i) => {
-    const isSelected = (appState.selectedContourPointIndex === i);
-    const isHovered = (appState.hoveredContourPointIndex === i);
-    const isDragging = (appState.isDragging && appState.dragMode === 'template_point' && appState.activePointIndex === i);
-
-    // EXTRA LARGE SQUARE handle size for shaping face freely
-    const size = (isSelected || isDragging) ? 58 : (isHovered ? 48 : 38);
-
-    ctx.save();
-    ctx.shadowColor = (isSelected || isDragging) ? '#f59e0b' : 'rgba(0, 0, 0, 0.95)';
-    ctx.shadowBlur = (isSelected || isDragging) ? 26 : 18;
-
-    ctx.fillStyle = (isSelected || isDragging) ? '#f59e0b' : (isHovered ? '#0ea5e9' : '#ffffff');
-    ctx.strokeStyle = (isSelected || isDragging) ? '#fef3c7' : '#0284c7';
-    ctx.lineWidth = (isSelected || isDragging) ? 6 : 4.5;
-
-    // Titik Sudut Square (Kotak)
-    ctx.beginPath();
-    ctx.roundRect(pt.x - size / 2, pt.y - size / 2, size, size, 8);
-    ctx.fill();
-    ctx.stroke();
-
-    // Center contrast square inner indicator
-    ctx.beginPath();
-    ctx.fillStyle = (isSelected || isDragging) ? '#ffffff' : '#0284c7';
-    const innerSize = Math.max(10, size / 3);
-    ctx.roundRect(pt.x - innerSize / 2, pt.y - innerSize / 2, innerSize, innerSize, 3);
-    ctx.fill();
-
-    // Render index label
-    if (isSelected || isHovered || ptsPx.length <= 16) {
-      ctx.fillStyle = (isSelected || isDragging) ? '#ffffff' : '#38bdf8';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText(`#${i + 1}`, pt.x + size / 2 + 5, pt.y + 5);
-    }
-
-    ctx.restore();
-  });
-
-  // Top Notification Badge
-  const badgeText = `MODE BENTUK WAJAH  •  ${points.length} Titik Sudut Square  •  Seret Titik Pada Canvas`;
+  // Top Notification Badge for Gesture Tarik Mode
+  const badgeText = `MODE BENTUK WAJAH  •  Gesture Tarik Aktif  •  Tarik Area Wajah Langsung Pada Canvas`;
   ctx.font = 'bold 10px sans-serif';
   const textWidth = ctx.measureText(badgeText).width;
   const badgeX = Math.max(10, Math.min(appState.CANVAS_W - textWidth - 20, (appState.CANVAS_W - textWidth) / 2));
   const badgeY = 24;
 
+  ctx.save();
   ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
   ctx.strokeStyle = '#0284c7';
   ctx.lineWidth = 1.5;
@@ -314,53 +256,48 @@ export function drawAlignmentGuidelines(ctx, appState) {
     ctx.stroke();
     ctx.restore();
 
-    // Render 8 Interactive Handle Points (4 Corner Square Handles for Shape/Bentuk + 4 Edge Circle Handles for Width/Lebar)
+    // Render 8 Interactive Circle Handle Points (4 Corner Circles for Perkecil/Scale + 4 Edge Circles for Perlebar/Width)
     const handles = getHandlePositions(rect);
     const handleKeys = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
-    const baseHandleSize = appState.handleSize || 52;
+    const baseHandleSize = appState.handleSize || 48;
     
     handleKeys.forEach(key => {
       const h = handles[key];
       const isHoveredOrActive = (appState.activeHandle === key);
       const isAnchorSelected = (appState.boxAnchor === key);
 
-      // Titik sudut square (Corner Handles) dibuat LEBIH BESAR untuk bebas membentuk wajah / aset
       const size = h.isCorner 
-        ? (isHoveredOrActive ? baseHandleSize + 22 : (isAnchorSelected ? baseHandleSize + 16 : baseHandleSize + 10)) 
-        : (isHoveredOrActive ? baseHandleSize + 10 : baseHandleSize - 2);
+        ? (isHoveredOrActive ? baseHandleSize + 16 : (isAnchorSelected ? baseHandleSize + 12 : baseHandleSize + 6)) 
+        : (isHoveredOrActive ? baseHandleSize + 12 : baseHandleSize + 2);
+
+      const radius = size / 2;
+      const strokeW = isHoveredOrActive || isAnchorSelected ? 6 : 4.5;
+      const totalRadius = radius + strokeW / 2 + 2; // include stroke + 2px margin
+
+      // Clamp draw position so circle is never cut off by canvas edge
+      const dx = Math.max(totalRadius, Math.min(canvasW - totalRadius, h.x));
+      const dy = Math.max(totalRadius, Math.min(canvasH - totalRadius, h.y));
 
       ctx.save();
       // Drop shadow for high contrast
       ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-      ctx.shadowBlur = 20;
+      ctx.shadowBlur = 18;
       
       // Handle fill and stroke styling
       ctx.fillStyle = isAnchorSelected ? '#f59e0b' : (isHoveredOrActive ? primaryColor : '#ffffff');
       ctx.strokeStyle = isHoveredOrActive ? '#ffffff' : (isAnchorSelected ? '#fef3c7' : accentColor);
-      ctx.lineWidth = isHoveredOrActive || isAnchorSelected ? 6.5 : 4.5;
+      ctx.lineWidth = strokeW;
 
       ctx.beginPath();
-      if (h.isCorner) {
-        // Titik Sudut SQUARE (Kotak) untuk Mengatur Bentuk (Shape / Scale) - EXTRA BESAR
-        ctx.roundRect(h.x - size / 2, h.y - size / 2, size, size, 8);
-      } else {
-        // Titik Sisi LINGKARAN (Circle) untuk Mengatur Lebar (Stretch X) & Tinggi (Stretch Y)
-        ctx.arc(h.x, h.y, size / 2, 0, Math.PI * 2);
-      }
+      // All 8 Box Handles are CIRCLE (Lingkaran Sudut Box) for Perkecil / Perlebar / Scale
+      ctx.arc(dx, dy, radius, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
 
-      // Inner indicator core
+      // Inner indicator core dot
       ctx.beginPath();
       ctx.fillStyle = isHoveredOrActive || isAnchorSelected ? '#ffffff' : primaryColor;
-      if (h.isCorner) {
-        // Inner Square for Corner Shape Points
-        const innerSize = Math.max(9, size / 3);
-        ctx.roundRect(h.x - innerSize / 2, h.y - innerSize / 2, innerSize, innerSize, 3);
-      } else {
-        // Inner Circle for Edge Width/Height Points
-        ctx.arc(h.x, h.y, Math.max(7, size / 3.2), 0, Math.PI * 2);
-      }
+      ctx.arc(dx, dy, Math.max(6, size / 3.2), 0, Math.PI * 2);
       ctx.fill();
 
       ctx.restore();

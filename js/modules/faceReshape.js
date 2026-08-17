@@ -156,11 +156,10 @@ export function drawReshapedFace(targetCtx, img, drawX, drawY, drawW, drawH, res
 
       const centerU = 0.5;
 
-      // --- A. TEMPLATE SHAPE WARP (dengan Preservasi Detail Internal Wajah) ---
+      // --- A. TEMPLATE SHAPE WARP (Ultra-Smooth Gaussian RBF Deformation) ---
       if (r.useTemplate && tgtContour.length > 0) {
-        let totalW = 0;
-        let sumDeltaU = 0;
-        let sumDeltaV = 0;
+        let totalShiftU = 0;
+        let totalShiftV = 0;
 
         for (let i = 0; i < srcContour.length; i++) {
           const sp = srcContour[i];
@@ -172,27 +171,15 @@ export function drawReshapedFace(targetCtx, img, drawX, drawY, drawW, drawH, res
           if (Math.abs(du) < 0.0001 && Math.abs(dv) < 0.0001) continue;
 
           const dist = Math.hypot(u - sp.u, v - sp.v);
-          // Inverse Distance Weighting (IDW) Kernel
-          const w = 1 / Math.pow(dist + 0.08, 2.5);
+          // Smooth Gaussian Radial Basis Function (RBF) Kernel
+          const w = Math.exp(-(dist * dist) / 0.08);
 
-          sumDeltaU += du * w;
-          sumDeltaV += dv * w;
-          totalW += w;
+          totalShiftU += du * w;
+          totalShiftV += dv * w;
         }
 
-        if (totalW > 0) {
-          const rawDeltaU = sumDeltaU / totalW;
-          const rawDeltaV = sumDeltaV / totalW;
-
-          // PRESERVE FACIAL DETAILS:
-          // Detail internal (mata, hidung, mulut di sekitar U=0.5, V=0.42) dipertahankan
-          const distToFeatureCenter = Math.hypot(u - 0.5, v - 0.42);
-          // Protection factor: 0.0 di pusat mata/hidung/mulut, 1.0 di kontur luar rahang/pipi
-          const preserveFactor = Math.min(1.0, Math.pow(distToFeatureCenter / 0.32, 1.8));
-
-          newU += rawDeltaU * preserveFactor;
-          newV += rawDeltaV * preserveFactor;
-        }
+        newU += totalShiftU;
+        newV += totalShiftV;
       }
 
       // --- B. PARAMETRIC SLIDER WARP ---

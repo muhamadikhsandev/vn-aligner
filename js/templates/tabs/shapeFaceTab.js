@@ -72,7 +72,7 @@ export const shapeFaceTabHTML = `
           <i data-lucide="move" class="w-3 h-3 text-pink-400"></i> Kontrol Titik Kontur Canvas:
         </span>
         <span class="font-mono text-pink-400 font-bold" 
-              x-text="(currentFaceTransform.reshape?.templatePoints?.length || 0) + ' Titik'"></span>
+              x-text="((currentFaceTransform.reshape && currentFaceTransform.reshape.templatePoints) ? currentFaceTransform.reshape.templatePoints.length : 0) + ' Titik'"></span>
       </div>
 
       <div class="flex items-center gap-1">
@@ -82,7 +82,7 @@ export const shapeFaceTabHTML = `
         </button>
         <button @click="removeContourPoint()" 
                 class="flex-1 px-2 py-1 bg-slate-900 hover:bg-red-900/40 text-red-300 border border-red-800/60 rounded text-[9px] font-bold cursor-pointer transition-all flex items-center justify-center gap-1"
-                :disabled="!currentFaceTransform.reshape?.templatePoints || currentFaceTransform.reshape.templatePoints.length <= 4">
+                :disabled="!currentFaceTransform.reshape || !currentFaceTransform.reshape.templatePoints || currentFaceTransform.reshape.templatePoints.length <= 4">
           <i data-lucide="minus-circle" class="w-3 h-3 text-red-400"></i> Hapus Titik
         </button>
         <button @click="showTemplateOutline = !showTemplateOutline; renderPreview()" 
@@ -93,7 +93,7 @@ export const shapeFaceTabHTML = `
       </div>
 
       <!-- Active Selected Contour Point Fine Tune -->
-      <template x-if="currentFaceTransform.reshape?.templatePoints && currentFaceTransform.reshape.templatePoints[selectedContourPointIndex]">
+      <template x-if="currentFaceTransform.reshape && currentFaceTransform.reshape.templatePoints && currentFaceTransform.reshape.templatePoints[selectedContourPointIndex]">
         <div class="mt-1 bg-slate-900/80 p-1.5 rounded border border-slate-800/90 flex flex-col gap-1 text-[10px]">
           <div class="flex justify-between items-center text-pink-300 font-semibold">
             <span x-text="'Titik #' + (selectedContourPointIndex + 1) + ' (' + (currentFaceTransform.reshape.templatePoints[selectedContourPointIndex].label || 'Kontur') + ')'"></span>
@@ -202,18 +202,18 @@ export const shapeFaceTabHTML = `
         <div class="bg-slate-950/80 p-1.5 rounded border border-slate-800 flex flex-col gap-0.5">
           <div class="flex justify-between items-center text-[9px]">
             <span class="text-slate-300">Ukuran:</span>
-            <span class="font-mono text-emerald-400 font-bold" x-text="(currentFaceTransform.reshape?.eyeScale || 100) + '%'"></span>
+            <span class="font-mono text-emerald-400 font-bold" x-text="((currentFaceTransform.reshape && currentFaceTransform.reshape.eyeScale) || 100) + '%'"></span>
           </div>
-          <input type="range" min="10" max="400" :value="currentFaceTransform.reshape?.eyeScale || 100" @input="updateFaceReshape('eyeScale', $event.target.value)" @change="pushHistoryState()" class="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <input type="range" min="10" max="400" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.eyeScale) || 100" @input="updateFaceReshape('eyeScale', $event.target.value)" @change="pushHistoryState()" class="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded cursor-pointer">
         </div>
 
         <!-- Jarak Antar Mata -->
         <div class="bg-slate-950/80 p-1.5 rounded border border-slate-800 flex flex-col gap-0.5">
           <div class="flex justify-between items-center text-[9px]">
             <span class="text-slate-300">Jarak Mata:</span>
-            <span class="font-mono text-emerald-400 font-bold" x-text="currentFaceTransform.reshape?.eyeDistance || 0"></span>
+            <span class="font-mono text-emerald-400 font-bold" x-text="(currentFaceTransform.reshape && currentFaceTransform.reshape.eyeDistance) || 0"></span>
           </div>
-          <input type="range" min="-100" max="100" :value="currentFaceTransform.reshape?.eyeDistance || 0" @input="updateFaceReshape('eyeDistance', $event.target.value)" @change="pushHistoryState()" class="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <input type="range" min="-100" max="100" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.eyeDistance) || 0" @input="updateFaceReshape('eyeDistance', $event.target.value)" @change="pushHistoryState()" class="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded cursor-pointer">
         </div>
       </div>
 
@@ -221,9 +221,9 @@ export const shapeFaceTabHTML = `
       <div class="bg-slate-950/80 p-1.5 rounded border border-slate-800 flex flex-col gap-0.5">
         <div class="flex justify-between items-center text-[9px]">
           <span class="text-slate-300">Tinggi Posisi Mata (Y):</span>
-          <span class="font-mono text-emerald-400 font-bold" x-text="currentFaceTransform.reshape?.eyeY || 0"></span>
+          <span class="font-mono text-emerald-400 font-bold" x-text="(currentFaceTransform.reshape && currentFaceTransform.reshape.eyeY) || 0"></span>
         </div>
-        <input type="range" min="-100" max="100" :value="currentFaceTransform.reshape?.eyeY || 0" @input="updateFaceReshape('eyeY', $event.target.value)" @change="pushHistoryState()" class="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+        <input type="range" min="-100" max="100" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.eyeY) || 0" @input="updateFaceReshape('eyeY', $event.target.value)" @change="pushHistoryState()" class="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded cursor-pointer">
       </div>
     </div>
 
@@ -238,18 +238,18 @@ export const shapeFaceTabHTML = `
         <div class="bg-slate-950/80 p-1.5 rounded border border-slate-800 flex flex-col gap-0.5">
           <div class="flex justify-between items-center text-[9px]">
             <span class="text-slate-300">Tinggi Alis (Y):</span>
-            <span class="font-mono text-amber-400 font-bold" x-text="currentFaceTransform.reshape?.eyebrowY || 0"></span>
+            <span class="font-mono text-amber-400 font-bold" x-text="(currentFaceTransform.reshape && currentFaceTransform.reshape.eyebrowY) || 0"></span>
           </div>
-          <input type="range" min="-100" max="100" :value="currentFaceTransform.reshape?.eyebrowY || 0" @input="updateFaceReshape('eyebrowY', $event.target.value)" @change="pushHistoryState()" class="w-full accent-amber-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <input type="range" min="-100" max="100" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.eyebrowY) || 0" @input="updateFaceReshape('eyebrowY', $event.target.value)" @change="pushHistoryState()" class="w-full accent-amber-500 bg-slate-800 h-1.5 rounded cursor-pointer">
         </div>
 
         <!-- Kemiringan Alis -->
         <div class="bg-slate-950/80 p-1.5 rounded border border-slate-800 flex flex-col gap-0.5">
           <div class="flex justify-between items-center text-[9px]">
             <span class="text-slate-300">Sudut / Miring:</span>
-            <span class="font-mono text-amber-400 font-bold" x-text="currentFaceTransform.reshape?.eyebrowAngle || 0"></span>
+            <span class="font-mono text-amber-400 font-bold" x-text="(currentFaceTransform.reshape && currentFaceTransform.reshape.eyebrowAngle) || 0"></span>
           </div>
-          <input type="range" min="-100" max="100" :value="currentFaceTransform.reshape?.eyebrowAngle || 0" @input="updateFaceReshape('eyebrowAngle', $event.target.value)" @change="pushHistoryState()" class="w-full accent-amber-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <input type="range" min="-100" max="100" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.eyebrowAngle) || 0" @input="updateFaceReshape('eyebrowAngle', $event.target.value)" @change="pushHistoryState()" class="w-full accent-amber-500 bg-slate-800 h-1.5 rounded cursor-pointer">
         </div>
       </div>
     </div>
@@ -265,18 +265,18 @@ export const shapeFaceTabHTML = `
         <div class="bg-slate-950/80 p-1.5 rounded border border-slate-800 flex flex-col gap-0.5">
           <div class="flex justify-between items-center text-[9px]">
             <span class="text-slate-300">Lebar Hidung:</span>
-            <span class="font-mono text-cyan-400 font-bold" x-text="(currentFaceTransform.reshape?.noseWidth || 100) + '%'"></span>
+            <span class="font-mono text-cyan-400 font-bold" x-text="((currentFaceTransform.reshape && currentFaceTransform.reshape.noseWidth) || 100) + '%'"></span>
           </div>
-          <input type="range" min="10" max="400" :value="currentFaceTransform.reshape?.noseWidth || 100" @input="updateFaceReshape('noseWidth', $event.target.value)" @change="pushHistoryState()" class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <input type="range" min="10" max="400" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.noseWidth) || 100" @input="updateFaceReshape('noseWidth', $event.target.value)" @change="pushHistoryState()" class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer">
         </div>
 
         <!-- Posisi Y Hidung -->
         <div class="bg-slate-950/80 p-1.5 rounded border border-slate-800 flex flex-col gap-0.5">
           <div class="flex justify-between items-center text-[9px]">
             <span class="text-slate-300">Tinggi Hidung (Y):</span>
-            <span class="font-mono text-cyan-400 font-bold" x-text="currentFaceTransform.reshape?.noseY || 0"></span>
+            <span class="font-mono text-cyan-400 font-bold" x-text="(currentFaceTransform.reshape && currentFaceTransform.reshape.noseY) || 0"></span>
           </div>
-          <input type="range" min="-100" max="100" :value="currentFaceTransform.reshape?.noseY || 0" @input="updateFaceReshape('noseY', $event.target.value)" @change="pushHistoryState()" class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <input type="range" min="-100" max="100" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.noseY) || 0" @input="updateFaceReshape('noseY', $event.target.value)" @change="pushHistoryState()" class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer">
         </div>
       </div>
     </div>
@@ -292,27 +292,27 @@ export const shapeFaceTabHTML = `
         <div class="bg-slate-950/80 p-1.5 rounded border border-slate-800 flex flex-col gap-0.5">
           <div class="flex justify-between items-center text-[8px]">
             <span class="text-slate-300 truncate">Lebar:</span>
-            <span class="font-mono text-pink-400 font-bold" x-text="(currentFaceTransform.reshape?.mouthWidth || 100) + '%'"></span>
+            <span class="font-mono text-pink-400 font-bold" x-text="((currentFaceTransform.reshape && currentFaceTransform.reshape.mouthWidth) || 100) + '%'"></span>
           </div>
-          <input type="range" min="10" max="400" :value="currentFaceTransform.reshape?.mouthWidth || 100" @input="updateFaceReshape('mouthWidth', $event.target.value)" @change="pushHistoryState()" class="w-full accent-pink-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <input type="range" min="10" max="400" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.mouthWidth) || 100" @input="updateFaceReshape('mouthWidth', $event.target.value)" @change="pushHistoryState()" class="w-full accent-pink-500 bg-slate-800 h-1.5 rounded cursor-pointer">
         </div>
 
         <!-- Skala Mulut -->
         <div class="bg-slate-950/80 p-1.5 rounded border border-slate-800 flex flex-col gap-0.5">
           <div class="flex justify-between items-center text-[8px]">
             <span class="text-slate-300 truncate">Ukuran:</span>
-            <span class="font-mono text-pink-400 font-bold" x-text="(currentFaceTransform.reshape?.mouthScale || 100) + '%'"></span>
+            <span class="font-mono text-pink-400 font-bold" x-text="((currentFaceTransform.reshape && currentFaceTransform.reshape.mouthScale) || 100) + '%'"></span>
           </div>
-          <input type="range" min="10" max="400" :value="currentFaceTransform.reshape?.mouthScale || 100" @input="updateFaceReshape('mouthScale', $event.target.value)" @change="pushHistoryState()" class="w-full accent-pink-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <input type="range" min="10" max="400" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.mouthScale) || 100" @input="updateFaceReshape('mouthScale', $event.target.value)" @change="pushHistoryState()" class="w-full accent-pink-500 bg-slate-800 h-1.5 rounded cursor-pointer">
         </div>
 
         <!-- Tinggi Mulut Y -->
         <div class="bg-slate-950/80 p-1.5 rounded border border-slate-800 flex flex-col gap-0.5">
           <div class="flex justify-between items-center text-[8px]">
             <span class="text-slate-300 truncate">Pos Y:</span>
-            <span class="font-mono text-pink-400 font-bold" x-text="currentFaceTransform.reshape?.mouthY || 0"></span>
+            <span class="font-mono text-pink-400 font-bold" x-text="(currentFaceTransform.reshape && currentFaceTransform.reshape.mouthY) || 0"></span>
           </div>
-          <input type="range" min="-100" max="100" :value="currentFaceTransform.reshape?.mouthY || 0" @input="updateFaceReshape('mouthY', $event.target.value)" @change="pushHistoryState()" class="w-full accent-pink-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <input type="range" min="-100" max="100" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.mouthY) || 0" @input="updateFaceReshape('mouthY', $event.target.value)" @change="pushHistoryState()" class="w-full accent-pink-500 bg-slate-800 h-1.5 rounded cursor-pointer">
         </div>
       </div>
     </div>
@@ -325,26 +325,26 @@ export const shapeFaceTabHTML = `
 
       <!-- Slider 1: Rahang / V-Shape -->
       <div class="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800 flex flex-col gap-1">
-        <div class="flex justify-between items-center text-xs"><span class="text-slate-300 font-medium">Rahang (V-Shape):</span><span class="font-mono text-purple-300 font-bold" x-text="currentFaceTransform.reshape?.vShape || 0"></span></div>
-        <input type="range" min="-300" max="300" :value="currentFaceTransform.reshape?.vShape || 0" @input="updateFaceReshape('vShape', $event.target.value)" @change="pushHistoryState()" class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+        <div class="flex justify-between items-center text-xs"><span class="text-slate-300 font-medium">Rahang (V-Shape):</span><span class="font-mono text-purple-300 font-bold" x-text="(currentFaceTransform.reshape && currentFaceTransform.reshape.vShape) || 0"></span></div>
+        <input type="range" min="-300" max="300" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.vShape) || 0" @input="updateFaceReshape('vShape', $event.target.value)" @change="pushHistoryState()" class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded cursor-pointer">
       </div>
 
       <!-- Slider 2: Pipi -->
       <div class="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800 flex flex-col gap-1">
-        <div class="flex justify-between items-center text-xs"><span class="text-slate-300 font-medium">Pipi:</span><span class="font-mono text-purple-300 font-bold" x-text="currentFaceTransform.reshape?.cheekbones || 0"></span></div>
-        <input type="range" min="-300" max="300" :value="currentFaceTransform.reshape?.cheekbones || 0" @input="updateFaceReshape('cheekbones', $event.target.value)" @change="pushHistoryState()" class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+        <div class="flex justify-between items-center text-xs"><span class="text-slate-300 font-medium">Pipi:</span><span class="font-mono text-purple-300 font-bold" x-text="(currentFaceTransform.reshape && currentFaceTransform.reshape.cheekbones) || 0"></span></div>
+        <input type="range" min="-300" max="300" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.cheekbones) || 0" @input="updateFaceReshape('cheekbones', $event.target.value)" @change="pushHistoryState()" class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded cursor-pointer">
       </div>
 
       <!-- Slider 3: Dahi -->
       <div class="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800 flex flex-col gap-1">
-        <div class="flex justify-between items-center text-xs"><span class="text-slate-300 font-medium">Dahi:</span><span class="font-mono text-purple-300 font-bold" x-text="currentFaceTransform.reshape?.forehead || 0"></span></div>
-        <input type="range" min="-300" max="300" :value="currentFaceTransform.reshape?.forehead || 0" @input="updateFaceReshape('forehead', $event.target.value)" @change="pushHistoryState()" class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+        <div class="flex justify-between items-center text-xs"><span class="text-slate-300 font-medium">Dahi:</span><span class="font-mono text-purple-300 font-bold" x-text="(currentFaceTransform.reshape && currentFaceTransform.reshape.forehead) || 0"></span></div>
+        <input type="range" min="-300" max="300" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.forehead) || 0" @input="updateFaceReshape('forehead', $event.target.value)" @change="pushHistoryState()" class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded cursor-pointer">
       </div>
 
       <!-- Slider 4: Panjang Dagu -->
       <div class="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800 flex flex-col gap-1">
-        <div class="flex justify-between items-center text-xs"><span class="text-slate-300 font-medium">Panjang Dagu:</span><span class="font-mono text-purple-300 font-bold" x-text="currentFaceTransform.reshape?.chinLength || 0"></span></div>
-        <input type="range" min="-300" max="300" :value="currentFaceTransform.reshape?.chinLength || 0" @input="updateFaceReshape('chinLength', $event.target.value)" @change="pushHistoryState()" class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+        <div class="flex justify-between items-center text-xs"><span class="text-slate-300 font-medium">Panjang Dagu:</span><span class="font-mono text-purple-300 font-bold" x-text="(currentFaceTransform.reshape && currentFaceTransform.reshape.chinLength) || 0"></span></div>
+        <input type="range" min="-300" max="300" :value="(currentFaceTransform.reshape && currentFaceTransform.reshape.chinLength) || 0" @input="updateFaceReshape('chinLength', $event.target.value)" @change="pushHistoryState()" class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded cursor-pointer">
       </div>
     </div>
 

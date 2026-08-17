@@ -4,7 +4,7 @@ export const exportTabHTML = `
   <div class="relative" @click.outside="isExportDropdownOpen = false">
     <label class="block text-[10px] font-medium text-slate-300 mb-0.5">Mode Hasil Layer</label>
     <button @click="isExportDropdownOpen = !isExportDropdownOpen" type="button" class="w-full bg-slate-950 border border-slate-700/80 text-slate-100 text-xs font-medium rounded-lg p-2 flex items-center justify-between min-h-[36px]">
-      <span class="truncate" x-text="exportOptions.find(o => o.value === exportMode)?.label"></span>
+      <span class="truncate" x-text="(exportOptions.find(o => o.value === exportMode) || {}).label"></span>
       <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
     </button>
     <div x-show="isExportDropdownOpen" class="absolute z-50 w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg shadow-xl py-1">
@@ -18,7 +18,7 @@ export const exportTabHTML = `
   <div class="relative" @click.outside="isScopeDropdownOpen = false">
     <label class="block text-[10px] font-medium text-slate-300 mb-0.5">Target Unduh</label>
     <button @click="isScopeDropdownOpen = !isScopeDropdownOpen" type="button" class="w-full bg-slate-950 border border-slate-700/80 text-slate-100 text-xs font-medium rounded-lg p-2 flex items-center justify-between min-h-[36px]">
-      <span class="truncate" x-text="exportScopeOptions.find(o => o.value === exportScope)?.label"></span>
+      <span class="truncate" x-text="(exportScopeOptions.find(o => o.value === exportScope) || {}).label"></span>
       <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
     </button>
     <div x-show="isScopeDropdownOpen" class="absolute z-50 w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg shadow-xl py-1">
