@@ -8,49 +8,104 @@ export const previewHTML = `
   <div class="relative flex-1 w-full h-full flex flex-col overflow-hidden border border-slate-800 rounded-xl checkerboard-bg min-h-0 shadow-2xl">
     
     <!-- TOP TOOLBAR — PILL TAB GROUP STYLE -->
-    <div class="w-full flex items-center justify-between px-2 py-1.5 shrink-0 gap-2 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/60">
+    <div class="w-full flex items-center justify-between px-2 py-1.5 shrink-0 gap-2 z-30 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/60">
 
-      <!-- LEFT: ALL TOGGLE TABS IN ONE BIG PILL CONTAINER -->
+      <!-- LEFT: MODE DROPDOWN CUSTOM (PINNED OUTSIDE OVERFLOW WRAPPER TO PREVENT CLIPPING) -->
+      <div class="relative shrink-0 z-50" @click.outside="isModeDropdownOpen = false">
+        <!-- Trigger Button -->
+        <button @click="isModeDropdownOpen = !isModeDropdownOpen" type="button"
+                class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 whitespace-nowrap rounded-2xl transition-all cursor-pointer border shadow-md"
+                :class="canvasInteractionMode === 'drag'
+                  ? 'bg-emerald-600 text-white border-emerald-500 shadow-emerald-500/30'
+                  : canvasInteractionMode === 'transform'
+                    ? 'bg-cyan-600 text-white border-cyan-500 shadow-cyan-500/30'
+                    : canvasInteractionMode === 'shape'
+                      ? 'bg-pink-600 text-white border-pink-500 shadow-pink-500/30'
+                      : 'bg-indigo-600 text-white border-indigo-500 shadow-indigo-500/30'"
+                title="Pilih Mode Interaksi Canvas">
+          <i x-show="canvasInteractionMode === 'drag'" data-lucide="hand" class="w-3.5 h-3.5"></i>
+          <i x-show="canvasInteractionMode === 'transform'" data-lucide="box" class="w-3.5 h-3.5"></i>
+          <i x-show="canvasInteractionMode === 'shape'" data-lucide="pen-tool" class="w-3.5 h-3.5"></i>
+          <i x-show="canvasInteractionMode === 'rotation'" data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+          <span x-text="canvasInteractionMode === 'drag' ? 'Mode Drag' : canvasInteractionMode === 'transform' ? 'Mode Transform' : canvasInteractionMode === 'shape' ? 'Mode Bentuk' : 'Mode Rotasi'"></span>
+          <i data-lucide="chevron-down" class="w-3 h-3 opacity-70"></i>
+        </button>
+
+        <!-- Dropdown Panel -->
+        <div x-show="isModeDropdownOpen"
+             class="absolute left-0 top-full mt-1.5 w-56 bg-slate-900/98 backdrop-blur-xl border border-slate-700/80 rounded-2xl shadow-2xl z-50 py-1.5 overflow-hidden">
+
+          <!-- Mode Drag -->
+          <button @click="setModeDrag(); isModeDropdownOpen = false" type="button"
+                  class="w-full px-3.5 py-2.5 text-[10px] font-bold cursor-pointer flex items-center gap-2.5 transition-all hover:bg-slate-800"
+                  :class="canvasInteractionMode === 'drag' ? 'bg-emerald-500/20 text-emerald-300' : 'text-slate-400'">
+            <div class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                 :class="canvasInteractionMode === 'drag' ? 'bg-emerald-600' : 'bg-slate-800'">
+              <i data-lucide="hand" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <div class="text-left flex-1">
+              <div>Mode Drag</div>
+              <div class="text-[9px] opacity-50 font-normal">Geser posisi aset gambar</div>
+            </div>
+            <i x-show="canvasInteractionMode === 'drag'" data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+          </button>
+
+          <!-- Mode Transform -->
+          <button @click="setModeTransform(); isModeDropdownOpen = false" type="button"
+                  class="w-full px-3.5 py-2.5 text-[10px] font-bold cursor-pointer flex items-center gap-2.5 transition-all hover:bg-slate-800"
+                  :class="canvasInteractionMode === 'transform' ? 'bg-cyan-500/20 text-cyan-300' : 'text-slate-400'">
+            <div class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                 :class="canvasInteractionMode === 'transform' ? 'bg-cyan-600' : 'bg-slate-800'">
+              <i data-lucide="box" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <div class="text-left flex-1">
+              <div>Mode Transform</div>
+              <div class="text-[9px] opacity-50 font-normal">Skala, resize 8 titik sudut</div>
+            </div>
+            <i x-show="canvasInteractionMode === 'transform'" data-lucide="check" class="w-3.5 h-3.5 text-cyan-400 shrink-0"></i>
+          </button>
+
+          <!-- Mode Bentuk -->
+          <button @click="setModeShape(); isModeDropdownOpen = false" type="button"
+                  class="w-full px-3.5 py-2.5 text-[10px] font-bold cursor-pointer flex items-center gap-2.5 transition-all hover:bg-slate-800"
+                  :class="canvasInteractionMode === 'shape' ? 'bg-pink-500/20 text-pink-300' : 'text-slate-400'">
+            <div class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                 :class="canvasInteractionMode === 'shape' ? 'bg-pink-600' : 'bg-slate-800'">
+              <i data-lucide="pen-tool" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <div class="text-left flex-1">
+              <div>Mode Bentuk</div>
+              <div class="text-[9px] opacity-50 font-normal">Bentuk kontur wajah bebas</div>
+            </div>
+            <i x-show="canvasInteractionMode === 'shape'" data-lucide="check" class="w-3.5 h-3.5 text-pink-400 shrink-0"></i>
+          </button>
+
+          <!-- Mode Rotasi -->
+          <button @click="setModeRotation(); isModeDropdownOpen = false" type="button"
+                  class="w-full px-3.5 py-2.5 text-[10px] font-bold cursor-pointer flex items-center gap-2.5 transition-all hover:bg-slate-800"
+                  :class="canvasInteractionMode === 'rotation' ? 'bg-indigo-500/20 text-indigo-300' : 'text-slate-400'">
+            <div class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                 :class="canvasInteractionMode === 'rotation' ? 'bg-indigo-600' : 'bg-slate-800'">
+              <i data-lucide="rotate-cw" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <div class="text-left flex-1">
+              <div>Mode Rotasi</div>
+              <div class="text-[9px] opacity-50 font-normal">Putar &amp; atur rotasi aset</div>
+            </div>
+            <i x-show="canvasInteractionMode === 'rotation'" data-lucide="check" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- CENTER: TOGGLE TABS IN SCROLLABLE CONTAINER -->
       <div class="flex-1 min-w-0 overflow-x-auto no-scrollbar touch-pan-x">
         <div class="flex items-center gap-1 bg-slate-900/80 border border-slate-700/60 rounded-2xl p-1 w-fit min-w-full sm:min-w-0 shadow-inner">
 
-          <!-- Live Badge (non-interactive, stays inside pill) -->
+          <!-- Live Badge -->
           <span class="text-[10px] text-blue-400 font-bold px-2.5 py-1.5 flex items-center gap-1 shrink-0 whitespace-nowrap opacity-80">
             <i data-lucide="sparkles" class="w-3 h-3"></i>
           </span>
-
-          <!-- Divider -->
-          <div class="w-px h-5 bg-slate-700/60 mx-0.5 shrink-0"></div>
-
-          <!-- 1. Mode Drag (Khusus Drag/Geser Posisi Aset Gambar) -->
-          <button @click="setModeDrag()"
-                  class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
-                  :class="canvasInteractionMode === 'drag' && isDragEnabled && !lockImagePosition
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30 ring-1 ring-emerald-400'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
-                  title="Mode Khusus Drag: Geser posisi aset gambar saja tanpa mengubah ukuran">
-            <i data-lucide="hand" class="w-3.5 h-3.5"></i> Mode Drag
-          </button>
-
-          <!-- 2. Mode Transform (Khusus Skala & Resize Box Handles) -->
-          <button @click="setModeTransform()"
-                  class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
-                  :class="canvasInteractionMode === 'transform' || activeTab === 'box'
-                    ? 'bg-cyan-600 text-white shadow-md shadow-cyan-500/30 ring-1 ring-cyan-400'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
-                  title="Mode Khusus Transform: Skala, perlebar & resize dengan 8 titik sudut box">
-            <i data-lucide="box" class="w-3.5 h-3.5"></i> Mode Transform
-          </button>
-
-          <!-- 3. Mode Bentuk (Khusus Deformasi Bentuk Wajah) -->
-          <button @click="setModeShape()"
-                  class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
-                  :class="canvasInteractionMode === 'shape' || activeTab === 'shapeFace'
-                    ? 'bg-pink-600 text-white shadow-md shadow-pink-500/30 ring-1 ring-pink-400'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
-                  title="Mode Khusus Bentuk Wajah: Tarik deformasi bentuk wajah secara bebas di canvas">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Mode Bentuk
-          </button>
 
           <!-- Divider -->
           <div class="w-px h-5 bg-slate-700/60 mx-0.5 shrink-0"></div>

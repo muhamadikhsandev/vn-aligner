@@ -256,55 +256,106 @@ export function drawAlignmentGuidelines(ctx, appState) {
     ctx.stroke();
     ctx.restore();
 
-    // Render 8 Interactive Circle Handle Points in Transform Mode, Mode Bentuk, or Box Tab
-    const shouldDrawHandles = (appState.canvasInteractionMode === 'transform' || appState.canvasInteractionMode === 'shape' || appState.activeTab === 'box' || appState.activeTab === 'shapeFace');
-    
-    if (shouldDrawHandles) {
+    // === HANDLES: Mode Transform → 8 resize sudut, Mode Bentuk → 12 warp kontur wajah ===
+    const isShapeMode = (appState.canvasInteractionMode === 'shape' || appState.activeTab === 'shapeFace');
+    const isTransformMode = (appState.canvasInteractionMode === 'transform' || appState.activeTab === 'box');
+
+    if (isTransformMode) {
+      // 8 Titik sudut lingkaran resize (nw, ne, sw, se, n, s, w, e)
       const handles = getHandlePositions(rect);
       const handleKeys = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
       const baseHandleSize = appState.handleSize || 48;
-      
+
       handleKeys.forEach(key => {
-      const h = handles[key];
-      const isHoveredOrActive = (appState.activeHandle === key);
-      const isAnchorSelected = (appState.boxAnchor === key);
+        const h = handles[key];
+        const isHoveredOrActive = (appState.activeHandle === key);
+        const isAnchorSelected = (appState.boxAnchor === key);
 
-      const size = h.isCorner 
-        ? (isHoveredOrActive ? baseHandleSize + 16 : (isAnchorSelected ? baseHandleSize + 12 : baseHandleSize + 6)) 
-        : (isHoveredOrActive ? baseHandleSize + 12 : baseHandleSize + 2);
+        const size = h.isCorner
+          ? (isHoveredOrActive ? baseHandleSize + 16 : (isAnchorSelected ? baseHandleSize + 12 : baseHandleSize + 6))
+          : (isHoveredOrActive ? baseHandleSize + 12 : baseHandleSize + 2);
 
-      const radius = size / 2;
-      const strokeW = isHoveredOrActive || isAnchorSelected ? 6 : 4.5;
-      const totalRadius = radius + strokeW / 2 + 2; // include stroke + 2px margin
+        const radius = size / 2;
+        const strokeW = isHoveredOrActive || isAnchorSelected ? 6 : 4.5;
+        const totalRadius = radius + strokeW / 2 + 2;
 
-      // Clamp draw position so circle is never cut off by canvas edge
-      const dx = Math.max(totalRadius, Math.min(canvasW - totalRadius, h.x));
-      const dy = Math.max(totalRadius, Math.min(canvasH - totalRadius, h.y));
+        const dx = Math.max(totalRadius, Math.min(canvasW - totalRadius, h.x));
+        const dy = Math.max(totalRadius, Math.min(canvasH - totalRadius, h.y));
 
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+        ctx.shadowBlur = 18;
+        ctx.fillStyle = isAnchorSelected ? '#f59e0b' : (isHoveredOrActive ? primaryColor : '#ffffff');
+        ctx.strokeStyle = isHoveredOrActive ? '#ffffff' : (isAnchorSelected ? '#fef3c7' : accentColor);
+        ctx.lineWidth = strokeW;
+
+        ctx.beginPath();
+        ctx.arc(dx, dy, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.fillStyle = isHoveredOrActive || isAnchorSelected ? '#ffffff' : primaryColor;
+        ctx.arc(dx, dy, Math.max(6, size / 3.2), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+    } else if (isShapeMode && isFaceTarget) {
+      // 12 Titik warp kontur wajah (Mode Bentuk)
+      const trans = appState.currentFaceTransform;
+      const reshape = (trans && trans.reshape) ? trans.reshape : {};
+      const defaultPoints = [
+        { id: 0, u: 0.50, v: 0.05 }, { id: 1, u: 0.72, v: 0.12 }, { id: 2, u: 0.88, v: 0.28 },
+        { id: 3, u: 0.95, v: 0.50 }, { id: 4, u: 0.85, v: 0.73 }, { id: 5, u: 0.65, v: 0.90 },
+        { id: 6, u: 0.50, v: 0.96 }, { id: 7, u: 0.35, v: 0.90 }, { id: 8, u: 0.15, v: 0.73 },
+        { id: 9, u: 0.05, v: 0.50 }, { id: 10, u: 0.12, v: 0.28 }, { id: 11, u: 0.28, v: 0.12 }
+      ];
+      const pts = (Array.isArray(reshape.templatePoints) && reshape.templatePoints.length > 0)
+        ? reshape.templatePoints : defaultPoints;
+
+      // Draw contur path dashed line connecting all points
       ctx.save();
-      // Drop shadow for high contrast
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-      ctx.shadowBlur = 18;
-      
-      // Handle fill and stroke styling
-      ctx.fillStyle = isAnchorSelected ? '#f59e0b' : (isHoveredOrActive ? primaryColor : '#ffffff');
-      ctx.strokeStyle = isHoveredOrActive ? '#ffffff' : (isAnchorSelected ? '#fef3c7' : accentColor);
-      ctx.lineWidth = strokeW;
-
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(236, 72, 153, 0.65)';
       ctx.beginPath();
-      // All 8 Box Handles are CIRCLE (Lingkaran Sudut Box) for Perkecil / Perlebar / Scale
-      ctx.arc(dx, dy, radius, 0, Math.PI * 2);
-      ctx.fill();
+      pts.forEach((pt, i) => {
+        const px = rect.x + pt.u * rect.w;
+        const py = rect.y + pt.v * rect.h;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.closePath();
       ctx.stroke();
-
-      // Inner indicator core dot
-      ctx.beginPath();
-      ctx.fillStyle = isHoveredOrActive || isAnchorSelected ? '#ffffff' : primaryColor;
-      ctx.arc(dx, dy, Math.max(6, size / 3.2), 0, Math.PI * 2);
-      ctx.fill();
-
       ctx.restore();
-    });
+
+      // Draw each warp node as a diamond/circle
+      pts.forEach((pt, i) => {
+        const px = Math.max(8, Math.min(canvasW - 8, rect.x + pt.u * rect.w));
+        const py = Math.max(8, Math.min(canvasH - 8, rect.y + pt.v * rect.h));
+        const isActive = (appState.activeWarpNode === i);
+        const nodeRadius = isActive ? 11 : 8;
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(236, 72, 153, 0.9)';
+        ctx.shadowBlur = isActive ? 16 : 8;
+
+        // Outer ring
+        ctx.beginPath();
+        ctx.arc(px, py, nodeRadius, 0, Math.PI * 2);
+        ctx.fillStyle = isActive ? '#ec4899' : 'rgba(255,255,255,0.92)';
+        ctx.fill();
+        ctx.lineWidth = isActive ? 3 : 2;
+        ctx.strokeStyle = isActive ? '#ffffff' : '#ec4899';
+        ctx.stroke();
+
+        // Inner core dot
+        ctx.beginPath();
+        ctx.arc(px, py, isActive ? 4.5 : 3, 0, Math.PI * 2);
+        ctx.fillStyle = isActive ? '#ffffff' : '#ec4899';
+        ctx.fill();
+        ctx.restore();
+      });
     }
 
     // Badge Teks Presisi Koordinat & Skala

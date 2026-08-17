@@ -316,6 +316,7 @@ export const transformActions = {
     this.showBox = false;
     this.isEraserActive = false;
     this.isEditingTemplate = false;
+    this.isModeDropdownOpen = false;
     if (this.activeTab === 'box' || this.activeTab === 'shapeFace') {
       this.activeTab = (this.activeTarget === 'face') ? 'posFace' : 'posBody';
     }
@@ -329,6 +330,7 @@ export const transformActions = {
     this.showBox = true;
     this.isEraserActive = false;
     this.isEditingTemplate = false;
+    this.isModeDropdownOpen = false;
     this.activeTab = 'box';
     this.renderPreview();
   },
@@ -339,8 +341,22 @@ export const transformActions = {
     this.lockImagePosition = false;
     this.showBox = true;
     this.isEraserActive = false;
+    this.isEditingTemplate = false;
     this.activeTab = 'shapeFace';
     this.activeTarget = 'face';
+    this.isModeDropdownOpen = false;
+    this.renderPreview();
+  },
+
+  setModeRotation() {
+    this.canvasInteractionMode = 'rotation';
+    this.isDragEnabled = false;
+    this.lockImagePosition = false;
+    this.showBox = false;
+    this.isEraserActive = false;
+    this.isEditingTemplate = false;
+    this.activeTab = 'rotate';
+    this.isModeDropdownOpen = false;
     this.renderPreview();
   }
 };

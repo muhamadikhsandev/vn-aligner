@@ -228,39 +228,57 @@ export const pointerEventsActions = {
       }
     }
 
-    // 1. MODE BENTUK (FACE SHAPE WARP DEFORM) - EXCLUSIVE TO MODE BENTUK
+    // 1. MODE BENTUK - Drag titik warp kontur wajah (klik titik terdekat → geser posisi titik itu)
     if (this.canvasInteractionMode === 'shape' && faceRect) {
-      const u0 = (pos.x - faceRect.x) / faceRect.w;
-      const v0 = (pos.y - faceRect.y) / faceRect.h;
+      const trans = this.currentFaceTransform;
+      if (!trans.reshape) trans.reshape = {};
 
-      if (u0 >= -0.35 && u0 <= 1.35 && v0 >= -0.35 && v0 <= 1.35) {
-        const trans = this.currentFaceTransform;
-        if (!trans.reshape) trans.reshape = {};
-        if (!Array.isArray(trans.reshape.templatePoints) || trans.reshape.templatePoints.length === 0) {
-          trans.reshape.templatePoints = [
-            { id: 0, u: 0.50, v: 0.05, label: 'Dahi Atas' },
-            { id: 1, u: 0.72, v: 0.12, label: 'Pelipis Kanan' },
-            { id: 2, u: 0.88, v: 0.28, label: 'Tulang Pipi Atas Kanan' },
-            { id: 3, u: 0.95, v: 0.50, label: 'Pipi Kanan' },
-            { id: 4, u: 0.85, v: 0.73, label: 'Rahang Kanan' },
-            { id: 5, u: 0.65, v: 0.90, label: 'Sisi Dagu Kanan' },
-            { id: 6, u: 0.50, v: 0.96, label: 'Ujung Dagu' },
-            { id: 7, u: 0.35, v: 0.90, label: 'Sisi Dagu Kiri' },
-            { id: 8, u: 0.15, v: 0.73, label: 'Rahang Kiri' },
-            { id: 9, u: 0.05, v: 0.50, label: 'Pipi Kiri' },
-            { id: 10, u: 0.12, v: 0.28, label: 'Tulang Pipi Atas Kiri' },
-            { id: 11, u: 0.28, v: 0.12, label: 'Pelipis Kiri' }
-          ];
+      // Pastikan templatePoints ada
+      if (!Array.isArray(trans.reshape.templatePoints) || trans.reshape.templatePoints.length === 0) {
+        trans.reshape.templatePoints = [
+          { id: 0, u: 0.50, v: 0.05, label: 'Dahi Atas' },
+          { id: 1, u: 0.72, v: 0.12, label: 'Pelipis Kanan' },
+          { id: 2, u: 0.88, v: 0.28, label: 'Tulang Pipi Atas Kanan' },
+          { id: 3, u: 0.95, v: 0.50, label: 'Pipi Kanan' },
+          { id: 4, u: 0.85, v: 0.73, label: 'Rahang Kanan' },
+          { id: 5, u: 0.65, v: 0.90, label: 'Sisi Dagu Kanan' },
+          { id: 6, u: 0.50, v: 0.96, label: 'Ujung Dagu' },
+          { id: 7, u: 0.35, v: 0.90, label: 'Sisi Dagu Kiri' },
+          { id: 8, u: 0.15, v: 0.73, label: 'Rahang Kiri' },
+          { id: 9, u: 0.05, v: 0.50, label: 'Pipi Kiri' },
+          { id: 10, u: 0.12, v: 0.28, label: 'Tulang Pipi Atas Kiri' },
+          { id: 11, u: 0.28, v: 0.12, label: 'Pelipis Kiri' }
+        ];
+      }
+      trans.reshape.useTemplate = true;
+
+      // Cari titik warp paling dekat dengan pointer
+      const pts = trans.reshape.templatePoints;
+      const hitRadius = 22; // px hit area per warp node
+      let closestIdx = -1;
+      let closestDist = Infinity;
+
+      pts.forEach((pt, i) => {
+        const nx = faceRect.x + pt.u * faceRect.w;
+        const ny = faceRect.y + pt.v * faceRect.h;
+        const dist = Math.hypot(pos.x - nx, pos.y - ny);
+        if (dist < hitRadius && dist < closestDist) {
+          closestDist = dist;
+          closestIdx = i;
         }
-        trans.reshape.useTemplate = true;
+      });
 
+      if (closestIdx !== -1) {
+        // Dragging 1 titik warp spesifik
         this.activeTarget = 'face';
-        this.dragMode = 'pull_warp';
+        this.activeWarpNode = closestIdx;
+        this.dragMode = 'warp_node';
         this.isDragging = true;
-        this.warpStartPos = { x: pos.x, y: pos.y };
-        this.warpStartU = u0;
-        this.warpStartV = v0;
-        this.initialTemplatePoints = JSON.parse(JSON.stringify(trans.reshape.templatePoints));
+        this.dragStartX = pos.x;
+        this.dragStartY = pos.y;
+        this.warpNodeStartU = pts[closestIdx].u;
+        this.warpNodeStartV = pts[closestIdx].v;
+        this.initialTemplatePoints = JSON.parse(JSON.stringify(pts));
         this.renderPreview();
         return;
       }
@@ -352,14 +370,45 @@ export const pointerEventsActions = {
       const faceRect = this.getCurrentFaceRect();
       const bodyRect = this.getCurrentBodyRect();
 
-      // Direct Pull Gesture Hover Cursor strictly in Mode Bentuk (canvasInteractionMode === 'shape')
+      // Hover warp node cursor in Mode Bentuk
       if (this.canvasInteractionMode === 'shape' && faceRect) {
-        const u0 = (pos.x - faceRect.x) / faceRect.w;
-        const v0 = (pos.y - faceRect.y) / faceRect.h;
-        if (u0 >= -0.35 && u0 <= 1.35 && v0 >= -0.35 && v0 <= 1.35) {
-          if (canvas) canvas.style.cursor = 'grab';
-          return;
+        const trans = this.currentFaceTransform;
+        const reshape = (trans && trans.reshape) ? trans.reshape : {};
+        const defaultPoints = [
+          { id: 0, u: 0.50, v: 0.05 }, { id: 1, u: 0.72, v: 0.12 }, { id: 2, u: 0.88, v: 0.28 },
+          { id: 3, u: 0.95, v: 0.50 }, { id: 4, u: 0.85, v: 0.73 }, { id: 5, u: 0.65, v: 0.90 },
+          { id: 6, u: 0.50, v: 0.96 }, { id: 7, u: 0.35, v: 0.90 }, { id: 8, u: 0.15, v: 0.73 },
+          { id: 9, u: 0.05, v: 0.50 }, { id: 10, u: 0.12, v: 0.28 }, { id: 11, u: 0.28, v: 0.12 }
+        ];
+        const pts = (Array.isArray(reshape.templatePoints) && reshape.templatePoints.length > 0) ? reshape.templatePoints : defaultPoints;
+        const hitRadius = 22;
+
+        let hoverIdx = -1;
+        let closestDist = Infinity;
+        pts.forEach((pt, i) => {
+          const nx = faceRect.x + pt.u * faceRect.w;
+          const ny = faceRect.y + pt.v * faceRect.h;
+          const dist = Math.hypot(pos.x - nx, pos.y - ny);
+          if (dist < hitRadius && dist < closestDist) {
+            closestDist = dist;
+            hoverIdx = i;
+          }
+        });
+
+        if (hoverIdx !== -1) {
+          if (canvas) canvas.style.cursor = 'crosshair';
+          if (this.activeWarpNode !== hoverIdx) {
+            this.activeWarpNode = hoverIdx;
+            this.renderPreview();
+          }
+        } else {
+          if (canvas) canvas.style.cursor = 'default';
+          if (this.activeWarpNode !== -1) {
+            this.activeWarpNode = -1;
+            this.renderPreview();
+          }
         }
+        return;
       }
 
       const activeRect = (this.activeTarget === 'face') ? faceRect : bodyRect;
@@ -384,7 +433,34 @@ export const pointerEventsActions = {
 
     if (!this.isDragging || this.isLocked) return;
 
-    // MODE GESTURE TARIK / PULL WARP DEFORMASI WAJAH (DESKTOP & MOBILE)
+    // MODE BENTUK: Geser 1 titik warp node kontur wajah
+    if (this.dragMode === 'warp_node') {
+      const faceRect = this.getCurrentFaceRect();
+      if (faceRect && this.initialTemplatePoints && this.activeWarpNode !== undefined && this.activeWarpNode !== -1) {
+        const duTotal = (pos.x - this.dragStartX) / faceRect.w;
+        const dvTotal = (pos.y - this.dragStartY) / faceRect.h;
+
+        const reshape = this.currentFaceTransform.reshape;
+        if (reshape && Array.isArray(reshape.templatePoints)) {
+          // Salin dari initialTemplatePoints supaya smooth tanpa akumulasi error
+          reshape.templatePoints = this.initialTemplatePoints.map((pt, i) => {
+            if (i === this.activeWarpNode) {
+              return {
+                ...pt,
+                u: Math.max(-0.35, Math.min(1.35, this.warpNodeStartU + duTotal)),
+                v: Math.max(-0.35, Math.min(1.35, this.warpNodeStartV + dvTotal))
+              };
+            }
+            return { ...pt };
+          });
+          reshape.useTemplate = true;
+          this.renderPreview();
+        }
+      }
+      return;
+    }
+
+    // MODE GESTURE TARIK / PULL WARP DEFORMASI WAJAH (LEGACY)
     if (this.dragMode === 'pull_warp') {
       const faceRect = this.getCurrentFaceRect();
       if (faceRect && this.initialTemplatePoints) {
@@ -398,7 +474,6 @@ export const pointerEventsActions = {
             const dist = Math.hypot(initPt.u - this.warpStartU, initPt.v - this.warpStartV);
             let weight = 0;
             if (dist < pullRadius) {
-              // Smooth Cosine falloff curve
               weight = Math.cos((dist / pullRadius) * (Math.PI / 2));
             }
             return {
@@ -497,6 +572,7 @@ export const pointerEventsActions = {
     if (this.isDragging) {
       this.isDragging = false;
       this.activeHandle = null;
+      this.activeWarpNode = -1;
       this.isSnappedX = false;
       this.isSnappedY = false;
       const canvas = document.getElementById('previewCanvas');

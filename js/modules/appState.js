@@ -83,8 +83,9 @@ export function createAppState() {
     brushOpacity: 100,
     activePointerPos: null,
 
-    // Mode Canvas Interaksi Khusus ('drag' | 'transform' | 'shape')
+    // Mode Canvas Interaksi Khusus ('drag' | 'transform' | 'shape' | 'rotation')
     canvasInteractionMode: 'drag',
+    isModeDropdownOpen: false,
 
     // Mode Box & Drag State
     boxLockAspect: false,
@@ -92,6 +93,7 @@ export function createAppState() {
     handleSize: 36,
     lockImagePosition: false,
     isDragEnabled: true,
+    activeWarpNode: -1,
 
     // Canvas Size
     CANVAS_W: 600,
