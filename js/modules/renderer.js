@@ -156,7 +156,7 @@ export function drawTemplateContourOverlay(ctx, appState) {
   const trans = appState.currentFaceTransform;
   const reshape = (trans && trans.reshape) ? trans.reshape : {};
 
-  const isTemplateActive = reshape.useTemplate || appState.showTemplateOutline || appState.isEditingTemplate || appState.activeTab === 'shapeFace';
+  const isTemplateActive = (appState.canvasInteractionMode === 'shape');
   if (!isTemplateActive) {
     return;
   }
@@ -256,12 +256,15 @@ export function drawAlignmentGuidelines(ctx, appState) {
     ctx.stroke();
     ctx.restore();
 
-    // Render 8 Interactive Circle Handle Points (4 Corner Circles for Perkecil/Scale + 4 Edge Circles for Perlebar/Width)
-    const handles = getHandlePositions(rect);
-    const handleKeys = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
-    const baseHandleSize = appState.handleSize || 48;
+    // Render 8 Interactive Circle Handle Points in Transform Mode, Mode Bentuk, or Box Tab
+    const shouldDrawHandles = (appState.canvasInteractionMode === 'transform' || appState.canvasInteractionMode === 'shape' || appState.activeTab === 'box' || appState.activeTab === 'shapeFace');
     
-    handleKeys.forEach(key => {
+    if (shouldDrawHandles) {
+      const handles = getHandlePositions(rect);
+      const handleKeys = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
+      const baseHandleSize = appState.handleSize || 48;
+      
+      handleKeys.forEach(key => {
       const h = handles[key];
       const isHoveredOrActive = (appState.activeHandle === key);
       const isAnchorSelected = (appState.boxAnchor === key);
@@ -302,6 +305,7 @@ export function drawAlignmentGuidelines(ctx, appState) {
 
       ctx.restore();
     });
+    }
 
     // Badge Teks Presisi Koordinat & Skala
     const trans = isFaceTarget ? appState.currentFaceTransform : appState.currentBodyTransform;
@@ -375,8 +379,8 @@ export function drawCanvas(canvas, appState) {
     ctx.restore();
   }
 
-  // Render Pen & Touch Pointer Indicator Overlay (Terlihat di Mobile & Desktop saat Dragging/Touching)
-  if (appState.activePointerPos && (appState.isDragging || appState.activeTab === 'shapeFace')) {
+  // Render Pen & Touch Pointer Indicator Overlay (Terlihat khusus pada Mode Bentuk Deformasi)
+  if (appState.activePointerPos && appState.canvasInteractionMode === 'shape') {
     const px = appState.activePointerPos.x;
     const py = appState.activePointerPos.y;
     ctx.save();

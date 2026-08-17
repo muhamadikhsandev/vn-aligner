@@ -189,12 +189,51 @@ export const pointerEventsActions = {
     const faceRect = this.getCurrentFaceRect();
     const bodyRect = this.getCurrentBodyRect();
 
-    // 0. Direct Pull Gesture Warp Mode (Gesture Tarik Bebas di Desktop & Mobile tanpa perlu Kotak Titik)
-    if ((this.activeTab === 'shapeFace' || this.isEditingTemplate) && faceRect) {
+    // 0. CHECK BOX RESIZE HANDLES (MODE TRANSFORM OR MODE BENTUK)
+    const isTransformOrShapeMode = (this.canvasInteractionMode === 'transform' || this.canvasInteractionMode === 'shape' || this.activeTab === 'box' || this.activeTab === 'shapeFace');
+
+    if (isTransformOrShapeMode) {
+      const activeRect = isTargetFace ? faceRect : bodyRect;
+      const otherRect = isTargetFace ? bodyRect : faceRect;
+      const otherTargetName = isTargetFace ? 'body' : 'face';
+
+      let hitHandle = this.checkHandleHit(pos, activeRect);
+      let hitTarget = hitHandle ? this.activeTarget : null;
+
+      if (!hitHandle && otherRect) {
+        hitHandle = this.checkHandleHit(pos, otherRect);
+        if (hitHandle) {
+          hitTarget = otherTargetName;
+        }
+      }
+
+      if (hitHandle && hitTarget) {
+        this.activeTarget = hitTarget;
+        this.activeHandle = hitHandle.key;
+        this.dragMode = 'resize_' + hitHandle.key;
+        this.isDragging = true;
+        this.dragStartX = pos.x;
+        this.dragStartY = pos.y;
+
+        const targetTrans = hitTarget === 'face' ? this.currentFaceTransform : this.currentBodyTransform;
+        this.initialScale = targetTrans.scale;
+        this.initialStretchX = targetTrans.stretchX !== undefined ? targetTrans.stretchX : (targetTrans.reshape?.stretchX || 100);
+        this.initialStretchY = targetTrans.stretchY !== undefined ? targetTrans.stretchY : (targetTrans.reshape?.stretchY || 100);
+        this.initialRect = hitTarget === 'face' ? faceRect : bodyRect;
+        this.initialOffsetX = targetTrans.offsetX;
+        this.initialOffsetY = targetTrans.offsetY;
+
+        this.renderPreview();
+        return;
+      }
+    }
+
+    // 1. MODE BENTUK (FACE SHAPE WARP DEFORM) - EXCLUSIVE TO MODE BENTUK
+    if (this.canvasInteractionMode === 'shape' && faceRect) {
       const u0 = (pos.x - faceRect.x) / faceRect.w;
       const v0 = (pos.y - faceRect.y) / faceRect.h;
 
-      if (u0 >= -0.25 && u0 <= 1.25 && v0 >= -0.25 && v0 <= 1.25) {
+      if (u0 >= -0.35 && u0 <= 1.35 && v0 >= -0.35 && v0 <= 1.35) {
         const trans = this.currentFaceTransform;
         if (!trans.reshape) trans.reshape = {};
         if (!Array.isArray(trans.reshape.templatePoints) || trans.reshape.templatePoints.length === 0) {
@@ -227,51 +266,13 @@ export const pointerEventsActions = {
       }
     }
 
-    // 1. Check Handle Hit on Active Target First, then Secondary Target (Bypass box handles when in shapeFace mode)
-    const activeRect = isTargetFace ? faceRect : bodyRect;
-    const otherRect = isTargetFace ? bodyRect : faceRect;
-    const otherTargetName = isTargetFace ? 'body' : 'face';
+    // 2. MODE DRAG (PURITY MOVE POSITION DRAGGING)
+    if (this.lockImagePosition) return;
 
-    let hitHandle = (this.activeTab === 'shapeFace') ? null : this.checkHandleHit(pos, activeRect);
-    let hitTarget = hitHandle ? this.activeTarget : null;
-
-    if (!hitHandle && otherRect && this.activeTab !== 'shapeFace') {
-      hitHandle = this.checkHandleHit(pos, otherRect);
-      if (hitHandle) {
-        hitTarget = otherTargetName;
-      }
-    }
-
-    if (hitHandle && hitTarget) {
-      this.activeTarget = hitTarget;
-      this.activeHandle = hitHandle.key;
-      this.dragMode = 'resize_' + hitHandle.key;
-      this.isDragging = true;
-      this.dragStartX = pos.x;
-      this.dragStartY = pos.y;
-
-      const targetTrans = hitTarget === 'face' ? this.currentFaceTransform : this.currentBodyTransform;
-      this.initialScale = targetTrans.scale;
-      this.initialStretchX = targetTrans.stretchX !== undefined ? targetTrans.stretchX : (targetTrans.reshape?.stretchX || 100);
-      this.initialStretchY = targetTrans.stretchY !== undefined ? targetTrans.stretchY : (targetTrans.reshape?.stretchY || 100);
-      this.initialRect = hitTarget === 'face' ? faceRect : bodyRect;
-      this.initialOffsetX = targetTrans.offsetX;
-      this.initialOffsetY = targetTrans.offsetY;
-
-      this.renderPreview();
-      return;
-    }
-
-    // 2. Prevent image move dragging if isDragEnabled is OFF, lockImagePosition is ON, or inside shape editing mode
-    if (!this.isDragEnabled || this.lockImagePosition || this.activeTab === 'shapeFace') {
-      return;
-    }
-
-    // 3. Move dragging when clicking inside bounding box
-    if (faceRect && (pos.x >= faceRect.x && pos.x <= faceRect.x + faceRect.w && pos.y >= faceRect.y && pos.y <= faceRect.y + faceRect.h)) {
+    // Check click target (face vs body) or drag active target
+    if (faceRect && (pos.x >= faceRect.x - 20 && pos.x <= faceRect.x + faceRect.w + 20 && pos.y >= faceRect.y - 20 && pos.y <= faceRect.y + faceRect.h + 20)) {
       this.activeTarget = 'face'; 
       this.activeHandle = null;
-      if (this.activeTab !== 'shapeFace') this.activeTab = 'posFace';
       this.isDragging = true; 
       this.dragMode = 'move';
       this.dragStartX = pos.x; 
@@ -282,10 +283,9 @@ export const pointerEventsActions = {
       return;
     }
 
-    if (bodyRect && (pos.x >= bodyRect.x && pos.x <= bodyRect.x + bodyRect.w && pos.y >= bodyRect.y && pos.y <= bodyRect.y + bodyRect.h)) {
+    if (bodyRect && (pos.x >= bodyRect.x - 20 && pos.x <= bodyRect.x + bodyRect.w + 20 && pos.y >= bodyRect.y - 20 && pos.y <= bodyRect.y + bodyRect.h + 20)) {
       this.activeTarget = 'body'; 
       this.activeHandle = null;
-      if (this.activeTab !== 'shapeFace') this.activeTab = 'posBody';
       this.isDragging = true; 
       this.dragMode = 'move';
       this.dragStartX = pos.x; 
@@ -294,6 +294,19 @@ export const pointerEventsActions = {
       this.initialOffsetY = this.currentBodyTransform.offsetY;
       this.renderPreview(); 
       return;
+    }
+
+    // Fallback: If clicked on canvas and we have active target, move active target
+    if (this.isDragEnabled) {
+      this.activeHandle = null;
+      this.isDragging = true;
+      this.dragMode = 'move';
+      this.dragStartX = pos.x;
+      this.dragStartY = pos.y;
+      const targetTrans = isTargetFace ? this.currentFaceTransform : this.currentBodyTransform;
+      this.initialOffsetX = targetTrans.offsetX;
+      this.initialOffsetY = targetTrans.offsetY;
+      this.renderPreview();
     }
   },
 
@@ -325,23 +338,33 @@ export const pointerEventsActions = {
       return;
     }
 
-    // Hover cursor handle check when not dragging
+    // Hover cursor check when not dragging
     if (!this.isDragging && !this.isLocked) {
+      if (this.canvasInteractionMode === 'drag') {
+        if (canvas) canvas.style.cursor = 'grab';
+        if (this.activeHandle !== null) {
+          this.activeHandle = null;
+          this.renderPreview();
+        }
+        return;
+      }
+
       const faceRect = this.getCurrentFaceRect();
       const bodyRect = this.getCurrentBodyRect();
 
-      // Direct Pull Gesture Hover Cursor in shapeFace Mode
-      if ((this.activeTab === 'shapeFace' || this.isEditingTemplate) && faceRect) {
+      // Direct Pull Gesture Hover Cursor strictly in Mode Bentuk (canvasInteractionMode === 'shape')
+      if (this.canvasInteractionMode === 'shape' && faceRect) {
         const u0 = (pos.x - faceRect.x) / faceRect.w;
         const v0 = (pos.y - faceRect.y) / faceRect.h;
-        if (u0 >= -0.25 && u0 <= 1.25 && v0 >= -0.25 && v0 <= 1.25) {
+        if (u0 >= -0.35 && u0 <= 1.35 && v0 >= -0.35 && v0 <= 1.35) {
           if (canvas) canvas.style.cursor = 'grab';
           return;
         }
       }
 
       const activeRect = (this.activeTarget === 'face') ? faceRect : bodyRect;
-      const hit = (this.activeTab === 'shapeFace') ? null : (this.checkHandleHit(pos, activeRect) || this.checkHandleHit(pos, (this.activeTarget === 'face') ? bodyRect : faceRect));
+      const isTransformMode = (this.canvasInteractionMode === 'transform' || this.activeTab === 'box');
+      const hit = isTransformMode ? (this.checkHandleHit(pos, activeRect) || this.checkHandleHit(pos, (this.activeTarget === 'face') ? bodyRect : faceRect)) : null;
       
       if (hit) {
         if (canvas) canvas.style.cursor = hit.cursor;
@@ -440,7 +463,8 @@ export const pointerEventsActions = {
       return;
     }
 
-    // MODE B: Move Position Dragging
+    // MODE B: Move Position Dragging (Pure Pan/Geser Posisi Aset)
+    if (canvas) canvas.style.cursor = 'grabbing';
     let targetX = Math.round(this.initialOffsetX + dx);
     let targetY = Math.round(this.initialOffsetY + dy);
 
@@ -476,7 +500,7 @@ export const pointerEventsActions = {
       this.isSnappedX = false;
       this.isSnappedY = false;
       const canvas = document.getElementById('previewCanvas');
-      if (canvas) canvas.style.cursor = '';
+      if (canvas) canvas.style.cursor = (this.canvasInteractionMode === 'drag') ? 'grab' : '';
       this.pushHistoryState();
       this.renderPreview();
     }

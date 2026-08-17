@@ -83,6 +83,9 @@ export function createAppState() {
     brushOpacity: 100,
     activePointerPos: null,
 
+    // Mode Canvas Interaksi Khusus ('drag' | 'transform' | 'shape')
+    canvasInteractionMode: 'drag',
+
     // Mode Box & Drag State
     boxLockAspect: false,
     boxAnchor: 'center',

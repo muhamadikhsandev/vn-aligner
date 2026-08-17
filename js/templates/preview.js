@@ -22,42 +22,51 @@ export const previewHTML = `
           <!-- Divider -->
           <div class="w-px h-5 bg-slate-700/60 mx-0.5 shrink-0"></div>
 
-          <!-- Garis Presisi Tab -->
-          <button @click="showGuidelines = !showGuidelines; renderPreview()"
+          <!-- 1. Mode Drag (Khusus Drag/Geser Posisi Aset Gambar) -->
+          <button @click="setModeDrag()"
                   class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
+                  :class="canvasInteractionMode === 'drag' && isDragEnabled && !lockImagePosition
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30 ring-1 ring-emerald-400'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
+                  title="Mode Khusus Drag: Geser posisi aset gambar saja tanpa mengubah ukuran">
+            <i data-lucide="hand" class="w-3.5 h-3.5"></i> Mode Drag
+          </button>
+
+          <!-- 2. Mode Transform (Khusus Skala & Resize Box Handles) -->
+          <button @click="setModeTransform()"
+                  class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
+                  :class="canvasInteractionMode === 'transform' || activeTab === 'box'
+                    ? 'bg-cyan-600 text-white shadow-md shadow-cyan-500/30 ring-1 ring-cyan-400'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
+                  title="Mode Khusus Transform: Skala, perlebar & resize dengan 8 titik sudut box">
+            <i data-lucide="box" class="w-3.5 h-3.5"></i> Mode Transform
+          </button>
+
+          <!-- 3. Mode Bentuk (Khusus Deformasi Bentuk Wajah) -->
+          <button @click="setModeShape()"
+                  class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
+                  :class="canvasInteractionMode === 'shape' || activeTab === 'shapeFace'
+                    ? 'bg-pink-600 text-white shadow-md shadow-pink-500/30 ring-1 ring-pink-400'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
+                  title="Mode Khusus Bentuk Wajah: Tarik deformasi bentuk wajah secara bebas di canvas">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Mode Bentuk
+          </button>
+
+          <!-- Divider -->
+          <div class="w-px h-5 bg-slate-700/60 mx-0.5 shrink-0"></div>
+
+          <!-- Garis Presisi Toggle -->
+          <button @click="showGuidelines = !showGuidelines; renderPreview()"
+                  class="text-[10px] px-2.5 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
                   :class="showGuidelines
                     ? 'bg-cyan-500/20 text-cyan-300 shadow-sm shadow-cyan-500/20'
                     : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/60'">
             <i data-lucide="crosshair" class="w-3 h-3"></i> Presisi
           </button>
 
-          <!-- Box Tab -->
-          <button @click="showBox = !showBox; renderPreview()"
-                  class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
-                  :class="showBox
-                    ? 'bg-sky-500/20 text-sky-300 shadow-sm shadow-sky-500/20'
-                    : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/60'">
-            <i data-lucide="box" class="w-3 h-3"></i> Box
-          </button>
-
-
-          <!-- Divider -->
-          <div class="w-px h-5 bg-slate-700/60 mx-0.5 shrink-0"></div>
-
-          <!-- Mode Drag Tab -->
-          <button @click="toggleDragMode()"
-                  class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
-                  :class="isDragEnabled && !lockImagePosition
-                    ? 'bg-emerald-500/20 text-emerald-300 shadow-sm shadow-emerald-500/20'
-                    : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/60'"
-                  title="Aktifkan / Nonaktifkan Mode Drag Geser Gambar">
-            <i data-lucide="hand" class="w-3 h-3"></i>
-            <span x-text="isDragEnabled && !lockImagePosition ? 'Drag ON' : 'Mode Drag'"></span>
-          </button>
-
-          <!-- Kunci Posisi Tab -->
+          <!-- Kunci Posisi Toggle -->
           <button @click="toggleLockImagePosition()"
-                  class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
+                  class="text-[10px] px-2.5 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
                   :class="lockImagePosition
                     ? 'bg-amber-500/20 text-amber-300 shadow-sm shadow-amber-500/20'
                     : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/60'">
@@ -66,9 +75,9 @@ export const previewHTML = `
             <span x-text="lockImagePosition ? 'Terkunci' : 'Kunci'"></span>
           </button>
 
-          <!-- Brush Hapus Tab -->
+          <!-- Brush Hapus Toggle -->
           <button @click="toggleEraserBrush()"
-                  class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
+                  class="text-[10px] px-2.5 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
                   :class="isEraserActive
                     ? 'bg-rose-500/25 text-rose-300 shadow-sm shadow-rose-500/20 animate-pulse'
                     : 'text-slate-500 hover:text-rose-300 hover:bg-slate-800/60'">
@@ -76,12 +85,9 @@ export const previewHTML = `
             <span x-text="isEraserActive ? 'Brush ON' : 'Hapus'"></span>
           </button>
 
-          <!-- Divider -->
-          <div class="w-px h-5 bg-slate-700/60 mx-0.5 shrink-0"></div>
-
-          <!-- Sembunyikan Overlay Tab -->
+          <!-- Sembunyikan Overlay Toggle -->
           <button @click="hideAllOverlays = !hideAllOverlays; renderPreview()"
-                  class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
+                  class="text-[10px] px-2.5 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
                   :class="hideAllOverlays
                     ? 'bg-amber-500/20 text-amber-300 shadow-sm shadow-amber-500/20'
                     : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/60'">
@@ -133,7 +139,8 @@ export const previewHTML = `
           <canvas id="previewCanvas"
                   @mousedown="handlePointerDown($event)"
                   @touchstart="handlePointerDown($event)"
-                  class="max-w-full max-h-full object-contain touch-none cursor-pen-edit"></canvas>
+                  :class="canvasInteractionMode === 'drag' ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : (canvasInteractionMode === 'shape' ? 'cursor-pen-edit' : 'cursor-move')"
+                  class="max-w-full max-h-full object-contain touch-none"></canvas>
         </div>
       </div>
 

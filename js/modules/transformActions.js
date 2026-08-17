@@ -307,5 +307,40 @@ export const transformActions = {
     this.isDragEnabled = !this.isDragEnabled;
     this.lockImagePosition = !this.isDragEnabled;
     this.renderPreview();
+  },
+
+  setModeDrag() {
+    this.canvasInteractionMode = 'drag';
+    this.isDragEnabled = true;
+    this.lockImagePosition = false;
+    this.showBox = false;
+    this.isEraserActive = false;
+    this.isEditingTemplate = false;
+    if (this.activeTab === 'box' || this.activeTab === 'shapeFace') {
+      this.activeTab = (this.activeTarget === 'face') ? 'posFace' : 'posBody';
+    }
+    this.renderPreview();
+  },
+
+  setModeTransform() {
+    this.canvasInteractionMode = 'transform';
+    this.isDragEnabled = false;
+    this.lockImagePosition = false;
+    this.showBox = true;
+    this.isEraserActive = false;
+    this.isEditingTemplate = false;
+    this.activeTab = 'box';
+    this.renderPreview();
+  },
+
+  setModeShape() {
+    this.canvasInteractionMode = 'shape';
+    this.isDragEnabled = false;
+    this.lockImagePosition = false;
+    this.showBox = true;
+    this.isEraserActive = false;
+    this.activeTab = 'shapeFace';
+    this.activeTarget = 'face';
+    this.renderPreview();
   }
 };
