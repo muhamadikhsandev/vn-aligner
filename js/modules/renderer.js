@@ -193,8 +193,8 @@ export function drawTemplateContourOverlay(ctx, appState) {
     ctx.shadowColor = (isSelected || isDragging) ? '#f59e0b' : 'rgba(0, 0, 0, 0.95)';
     ctx.shadowBlur = (isSelected || isDragging) ? 26 : 18;
 
-    ctx.fillStyle = (isSelected || isDragging) ? '#f59e0b' : (isHovered ? '#ec4899' : '#ffffff');
-    ctx.strokeStyle = (isSelected || isDragging) ? '#fef3c7' : '#be185d';
+    ctx.fillStyle = (isSelected || isDragging) ? '#f59e0b' : (isHovered ? '#0ea5e9' : '#ffffff');
+    ctx.strokeStyle = (isSelected || isDragging) ? '#fef3c7' : '#0284c7';
     ctx.lineWidth = (isSelected || isDragging) ? 6 : 4.5;
 
     // Titik Sudut Square (Kotak)
@@ -205,14 +205,14 @@ export function drawTemplateContourOverlay(ctx, appState) {
 
     // Center contrast square inner indicator
     ctx.beginPath();
-    ctx.fillStyle = (isSelected || isDragging) ? '#ffffff' : '#be185d';
+    ctx.fillStyle = (isSelected || isDragging) ? '#ffffff' : '#0284c7';
     const innerSize = Math.max(10, size / 3);
     ctx.roundRect(pt.x - innerSize / 2, pt.y - innerSize / 2, innerSize, innerSize, 3);
     ctx.fill();
 
     // Render index label
     if (isSelected || isHovered || ptsPx.length <= 16) {
-      ctx.fillStyle = (isSelected || isDragging) ? '#ffffff' : '#f472b6';
+      ctx.fillStyle = (isSelected || isDragging) ? '#ffffff' : '#38bdf8';
       ctx.font = 'bold 13px sans-serif';
       ctx.fillText(`#${i + 1}`, pt.x + size / 2 + 5, pt.y + 5);
     }
@@ -228,7 +228,7 @@ export function drawTemplateContourOverlay(ctx, appState) {
   const badgeY = 24;
 
   ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-  ctx.strokeStyle = '#ec4899';
+  ctx.strokeStyle = '#0284c7';
   ctx.lineWidth = 1.5;
 
   ctx.beginPath();
@@ -236,7 +236,7 @@ export function drawTemplateContourOverlay(ctx, appState) {
   ctx.fill();
   ctx.stroke();
 
-  ctx.fillStyle = '#f472b6';
+  ctx.fillStyle = '#38bdf8';
   ctx.fillText(badgeText, badgeX, badgeY);
 
   ctx.restore();
@@ -302,21 +302,6 @@ export function drawAlignmentGuidelines(ctx, appState) {
     ctx.lineWidth = appState.isDragging ? 3 : 2.5;
     ctx.strokeStyle = primaryColor;
     ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
-
-    // Render Corner Bracket Lines (Garis Siku Sudut Box CAD/Photoshop Style)
-    const bracketLen = Math.min(22, Math.min(rect.w, rect.h) / 4);
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = primaryColor;
-    ctx.beginPath();
-    // NW Corner Bracket
-    ctx.moveTo(rect.x, rect.y + bracketLen); ctx.lineTo(rect.x, rect.y); ctx.lineTo(rect.x + bracketLen, rect.y);
-    // NE Corner Bracket
-    ctx.moveTo(rect.x + rect.w - bracketLen, rect.y); ctx.lineTo(rect.x + rect.w, rect.y); ctx.lineTo(rect.x + rect.w, rect.y + bracketLen);
-    // SW Corner Bracket
-    ctx.moveTo(rect.x, rect.y + rect.h - bracketLen); ctx.lineTo(rect.x, rect.y + rect.h); ctx.lineTo(rect.x + bracketLen, rect.y + rect.h);
-    // SE Corner Bracket
-    ctx.moveTo(rect.x + rect.w - bracketLen, rect.y + rect.h); ctx.lineTo(rect.x + rect.w, rect.y + rect.h); ctx.lineTo(rect.x + rect.w, rect.y + rect.h - bracketLen);
-    ctx.stroke();
 
     // Center Anchor Point Dot
     ctx.save();

@@ -140,12 +140,15 @@ export const pointerEventsActions = {
     const canvas = document.getElementById('previewCanvas');
     const rectClient = canvas ? canvas.getBoundingClientRect() : { width: this.CANVAS_W };
     const scaleRatio = this.CANVAS_W / (rectClient.width || this.CANVAS_W);
-    const hitRadius = Math.max(40, 40 * scaleRatio);
 
     const keys = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
     for (const key of keys) {
       const h = handles[key];
       const dist = Math.hypot(pos.x - h.x, pos.y - h.y);
+      // Tighter hit radius for edge side handles (n, s, w, e) so dragging near sides moves the asset instead of accidentally stretching width ("kepnecet melebar")
+      const hitRadius = h.isCorner 
+        ? Math.max(34, 34 * scaleRatio) 
+        : Math.max(14, 14 * scaleRatio);
       if (dist <= hitRadius) {
         return h;
       }
@@ -210,15 +213,15 @@ export const pointerEventsActions = {
       }
     }
 
-    // 1. Check Handle Hit on Active Target First, then Secondary Target
+    // 1. Check Handle Hit on Active Target First, then Secondary Target (Bypass box handles when in shapeFace mode)
     const activeRect = isTargetFace ? faceRect : bodyRect;
     const otherRect = isTargetFace ? bodyRect : faceRect;
     const otherTargetName = isTargetFace ? 'body' : 'face';
 
-    let hitHandle = this.checkHandleHit(pos, activeRect);
+    let hitHandle = (this.activeTab === 'shapeFace') ? null : this.checkHandleHit(pos, activeRect);
     let hitTarget = hitHandle ? this.activeTarget : null;
 
-    if (!hitHandle && otherRect) {
+    if (!hitHandle && otherRect && this.activeTab !== 'shapeFace') {
       hitHandle = this.checkHandleHit(pos, otherRect);
       if (hitHandle) {
         hitTarget = otherTargetName;
@@ -342,7 +345,7 @@ export const pointerEventsActions = {
       }
 
       const activeRect = (this.activeTarget === 'face') ? faceRect : bodyRect;
-      const hit = this.checkHandleHit(pos, activeRect) || this.checkHandleHit(pos, (this.activeTarget === 'face') ? bodyRect : faceRect);
+      const hit = (this.activeTab === 'shapeFace') ? null : (this.checkHandleHit(pos, activeRect) || this.checkHandleHit(pos, (this.activeTarget === 'face') ? bodyRect : faceRect));
       
       if (hit) {
         if (canvas) canvas.style.cursor = hit.cursor;
