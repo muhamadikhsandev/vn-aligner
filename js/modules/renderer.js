@@ -149,7 +149,7 @@ export function getHandlePositions(rect) {
 }
 
 export function drawTemplateContourOverlay(ctx, appState) {
-  if (appState.showPolygon === false || appState.hideAllOverlays) {
+  if (appState.hideAllOverlays) {
     return;
   }
 
@@ -179,66 +179,49 @@ export function drawTemplateContourOverlay(ctx, appState) {
     label: p.label || ''
   }));
 
-  // 1. Draw glowing closed polygon outline
-  ctx.beginPath();
-  ctx.moveTo(ptsPx[0].x, ptsPx[0].y);
-  for (let i = 1; i < ptsPx.length; i++) {
-    ctx.lineTo(ptsPx[i].x, ptsPx[i].y);
-  }
-  ctx.closePath();
-
-  ctx.shadowColor = 'rgba(236, 72, 153, 0.8)';
-  ctx.shadowBlur = 10;
-  ctx.strokeStyle = '#f472b6';
-  ctx.lineWidth = 3;
-  ctx.setLineDash([6, 4]);
-  ctx.stroke();
-
-  // Smooth inner fill tint to show template area clearly
-  ctx.fillStyle = 'rgba(236, 72, 153, 0.12)';
-  ctx.fill();
-
-  // 2. Draw interactive control point handles (SUPER LARGE FOR EASY TOUCH/CLICK)
+  // Interactive control point handles (EXTRA LARGE SQUARE HANDLES FOR FREEFORM FACE SHAPING)
   ctx.setLineDash([]);
   ptsPx.forEach((pt, i) => {
     const isSelected = (appState.selectedContourPointIndex === i);
     const isHovered = (appState.hoveredContourPointIndex === i);
     const isDragging = (appState.isDragging && appState.dragMode === 'template_point' && appState.activePointIndex === i);
 
-    // MEGA enlarged radius — easy to grab on touch & mouse
-    const radius = (isSelected || isDragging) ? 34 : (isHovered ? 28 : 22);
+    // EXTRA LARGE SQUARE handle size for shaping face freely
+    const size = (isSelected || isDragging) ? 58 : (isHovered ? 48 : 38);
 
     ctx.save();
-    ctx.shadowColor = (isSelected || isDragging) ? '#f59e0b' : 'rgba(0, 0, 0, 0.9)';
-    ctx.shadowBlur = (isSelected || isDragging) ? 24 : 16;
+    ctx.shadowColor = (isSelected || isDragging) ? '#f59e0b' : 'rgba(0, 0, 0, 0.95)';
+    ctx.shadowBlur = (isSelected || isDragging) ? 26 : 18;
 
     ctx.fillStyle = (isSelected || isDragging) ? '#f59e0b' : (isHovered ? '#ec4899' : '#ffffff');
     ctx.strokeStyle = (isSelected || isDragging) ? '#fef3c7' : '#be185d';
-    ctx.lineWidth = (isSelected || isDragging) ? 5.5 : 4;
+    ctx.lineWidth = (isSelected || isDragging) ? 6 : 4.5;
 
+    // Titik Sudut Square (Kotak)
     ctx.beginPath();
-    ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
+    ctx.roundRect(pt.x - size / 2, pt.y - size / 2, size, size, 8);
     ctx.fill();
     ctx.stroke();
 
-    // Center contrast dot indicator
+    // Center contrast square inner indicator
     ctx.beginPath();
     ctx.fillStyle = (isSelected || isDragging) ? '#ffffff' : '#be185d';
-    ctx.arc(pt.x, pt.y, Math.max(6, radius / 3), 0, Math.PI * 2);
+    const innerSize = Math.max(10, size / 3);
+    ctx.roundRect(pt.x - innerSize / 2, pt.y - innerSize / 2, innerSize, innerSize, 3);
     ctx.fill();
 
     // Render index label
     if (isSelected || isHovered || ptsPx.length <= 16) {
       ctx.fillStyle = (isSelected || isDragging) ? '#ffffff' : '#f472b6';
       ctx.font = 'bold 13px sans-serif';
-      ctx.fillText(`#${i + 1}`, pt.x + radius + 5, pt.y + 5);
+      ctx.fillText(`#${i + 1}`, pt.x + size / 2 + 5, pt.y + 5);
     }
 
     ctx.restore();
   });
 
-  // 3. Top Notification Badge
-  const badgeText = `MODE CETAK BENTUK WAJAH  •  ${points.length} Titik Kontur Template  •  Seret Titik Pada Canvas`;
+  // Top Notification Badge
+  const badgeText = `MODE BENTUK WAJAH  •  ${points.length} Titik Sudut Square  •  Seret Titik Pada Canvas`;
   ctx.font = 'bold 10px sans-serif';
   const textWidth = ctx.measureText(badgeText).width;
   const badgeX = Math.max(10, Math.min(appState.CANVAS_W - textWidth - 20, (appState.CANVAS_W - textWidth) / 2));
@@ -346,7 +329,7 @@ export function drawAlignmentGuidelines(ctx, appState) {
     ctx.stroke();
     ctx.restore();
 
-    // Render 8 Interactive Handle Points (4 Corner Handles + 4 Edge Handles) - MEGA LARGE
+    // Render 8 Interactive Handle Points (4 Corner Square Handles for Shape/Bentuk + 4 Edge Circle Handles for Width/Lebar)
     const handles = getHandlePositions(rect);
     const handleKeys = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
     const baseHandleSize = appState.handleSize || 52;
@@ -356,38 +339,44 @@ export function drawAlignmentGuidelines(ctx, appState) {
       const isHoveredOrActive = (appState.activeHandle === key);
       const isAnchorSelected = (appState.boxAnchor === key);
 
+      // Titik sudut square (Corner Handles) dibuat LEBIH BESAR untuk bebas membentuk wajah / aset
       const size = h.isCorner 
-        ? (isHoveredOrActive ? baseHandleSize + 14 : (isAnchorSelected ? baseHandleSize + 10 : baseHandleSize)) 
-        : (isHoveredOrActive ? baseHandleSize + 8 : baseHandleSize - 4);
+        ? (isHoveredOrActive ? baseHandleSize + 22 : (isAnchorSelected ? baseHandleSize + 16 : baseHandleSize + 10)) 
+        : (isHoveredOrActive ? baseHandleSize + 10 : baseHandleSize - 2);
 
       ctx.save();
       // Drop shadow for high contrast
       ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-      ctx.shadowBlur = 18;
+      ctx.shadowBlur = 20;
       
       // Handle fill and stroke styling
       ctx.fillStyle = isAnchorSelected ? '#f59e0b' : (isHoveredOrActive ? primaryColor : '#ffffff');
       ctx.strokeStyle = isHoveredOrActive ? '#ffffff' : (isAnchorSelected ? '#fef3c7' : accentColor);
-      ctx.lineWidth = isHoveredOrActive || isAnchorSelected ? 6 : 4.5;
+      ctx.lineWidth = isHoveredOrActive || isAnchorSelected ? 6.5 : 4.5;
 
       ctx.beginPath();
       if (h.isCorner) {
-        // Corner handles: MEGA circular handle
-        ctx.arc(h.x, h.y, size / 2, 0, Math.PI * 2);
-      } else {
-        // Edge handles: Rounded square
+        // Titik Sudut SQUARE (Kotak) untuk Mengatur Bentuk (Shape / Scale) - EXTRA BESAR
         ctx.roundRect(h.x - size / 2, h.y - size / 2, size, size, 8);
+      } else {
+        // Titik Sisi LINGKARAN (Circle) untuk Mengatur Lebar (Stretch X) & Tinggi (Stretch Y)
+        ctx.arc(h.x, h.y, size / 2, 0, Math.PI * 2);
       }
       ctx.fill();
       ctx.stroke();
 
-      // Inner indicator dot on corners
+      // Inner indicator core
+      ctx.beginPath();
+      ctx.fillStyle = isHoveredOrActive || isAnchorSelected ? '#ffffff' : primaryColor;
       if (h.isCorner) {
-        ctx.beginPath();
-        ctx.fillStyle = isHoveredOrActive || isAnchorSelected ? '#ffffff' : primaryColor;
-        ctx.arc(h.x, h.y, Math.max(7, size / 3), 0, Math.PI * 2);
-        ctx.fill();
+        // Inner Square for Corner Shape Points
+        const innerSize = Math.max(9, size / 3);
+        ctx.roundRect(h.x - innerSize / 2, h.y - innerSize / 2, innerSize, innerSize, 3);
+      } else {
+        // Inner Circle for Edge Width/Height Points
+        ctx.arc(h.x, h.y, Math.max(7, size / 3.2), 0, Math.PI * 2);
       }
+      ctx.fill();
 
       ctx.restore();
     });

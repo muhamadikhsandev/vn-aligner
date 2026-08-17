@@ -190,7 +190,7 @@ export const pointerEventsActions = {
     if ((this.activeTab === 'shapeFace' || this.isEditingTemplate) && faceRect) {
       const reshape = this.currentFaceTransform.reshape;
       const points = (reshape && Array.isArray(reshape.templatePoints)) ? reshape.templatePoints : [];
-      const hitRadius = 40;
+      const hitRadius = 52;
       for (let i = 0; i < points.length; i++) {
         const pt = points[i];
         const px = faceRect.x + pt.u * faceRect.w;
@@ -322,7 +322,7 @@ export const pointerEventsActions = {
           const pt = points[i];
           const px = faceRect.x + pt.u * faceRect.w;
           const py = faceRect.y + pt.v * faceRect.h;
-          if (Math.hypot(pos.x - px, pos.y - py) <= 24) {
+          if (Math.hypot(pos.x - px, pos.y - py) <= 36) {
             hitPointIdx = i;
             break;
           }

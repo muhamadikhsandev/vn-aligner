@@ -40,14 +40,6 @@ export const previewHTML = `
             <i data-lucide="box" class="w-3 h-3"></i> Box
           </button>
 
-          <!-- Polygon Tab -->
-          <button @click="showPolygon = !showPolygon; renderPreview()"
-                  class="text-[10px] px-3 py-1.5 font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-xl transition-all cursor-pointer"
-                  :class="showPolygon
-                    ? 'bg-pink-500/20 text-pink-300 shadow-sm shadow-pink-500/20'
-                    : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/60'">
-            <i data-lucide="hexagon" class="w-3 h-3"></i> Polygon
-          </button>
 
           <!-- Divider -->
           <div class="w-px h-5 bg-slate-700/60 mx-0.5 shrink-0"></div>
