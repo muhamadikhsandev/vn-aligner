@@ -1,0 +1,34 @@
+<!-- TAB 3: LAYER ORDER -->
+<div x-show="activeTab === 'layer'" class="flex flex-col gap-2">
+  <div class="bg-purple-950/30 p-2.5 rounded-xl border border-purple-800/50 flex flex-col gap-2">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+        <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> Urutan Layer Wajah
+      </span>
+      <div class="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800">
+        <button @click="setLayerMode('global')" class="px-2 py-1 text-[9px] font-bold rounded-md min-h-[28px]" :class="layerMode === 'global' ? 'bg-purple-600 text-white' : 'text-slate-400'">Semua</button>
+        <button @click="setLayerMode('individual')" class="px-2 py-1 text-[9px] font-bold rounded-md min-h-[28px]" :class="layerMode === 'individual' ? 'bg-purple-600 text-white' : 'text-slate-400'">Satuan</button>
+      </div>
+    </div>
+
+    <p class="text-[10px] text-slate-400">Pilih posisi layer Wajah terhadap Badan (Gunakan "DI BAWAH" untuk Lubang Kerudung):</p>
+
+    <div class="grid grid-cols-2 gap-2 pt-1">
+      <button @click="setFaceLayerOrder('below')" 
+              class="px-3 py-2.5 rounded-lg border text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all min-h-[42px]"
+              :class="currentFaceLayerOrder === 'below' ? 'bg-purple-600 border-purple-400 text-white shadow-lg' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'">
+        <i data-lucide="arrow-down" class="w-4 h-4"></i> Wajah DI BAWAH (Kerudung)
+      </button>
+      <button @click="setFaceLayerOrder('above')" 
+              class="px-3 py-2.5 rounded-lg border text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all min-h-[42px]"
+              :class="currentFaceLayerOrder === 'above' ? 'bg-purple-600 border-purple-400 text-white shadow-lg' : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'">
+        <i data-lucide="arrow-up" class="w-4 h-4"></i> Wajah DI ATAS
+      </button>
+    </div>
+    
+    <div class="mt-1 bg-slate-950/80 p-2 rounded-lg border border-slate-800/80 text-[10px] text-slate-400">
+      <span class="text-purple-300 font-semibold">Mode Aktif:</span> 
+      <span x-text="layerMode === 'global' ? 'Global (Pengaturan berlaku untuk SEMUA aset wajah)' : 'Satuan (Pengaturan khusus untuk WAJAH TERPILIH)'"></span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,78 @@
+<!-- TAB 4: POSISI WAJAH -->
+<div x-show="activeTab === 'posFace'" class="flex flex-col gap-2">
+  <div class="flex items-center justify-between">
+    <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">
+      <i data-lucide="smile" class="w-4 h-4"></i> Transform Wajah
+    </span>
+    <div class="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800">
+      <button @click="setFaceMode('global')" class="px-2 py-1 text-[9px] font-bold rounded-md min-h-[28px]" :class="faceMode === 'global' ? 'bg-emerald-600 text-white' : 'text-slate-400'">Semua</button>
+      <button @click="setFaceMode('individual')" class="px-2 py-1 text-[9px] font-bold rounded-md min-h-[28px]" :class="faceMode === 'individual' ? 'bg-emerald-600 text-white' : 'text-slate-400'">Satuan</button>
+    </div>
+  </div>
+
+  <!-- 1. SKALA UTAMA PROPORSIONAL (BEBAS TANPA MENTOK) -->
+  <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+    <div class="flex justify-between items-center text-xs">
+      <span class="text-slate-300 font-medium">Skala Utama (Bisa >1000%):</span>
+      <input type="number" min="1" max="5000" :value="currentFaceTransform.scale" 
+             @input="updateFaceTransform('scale', $event.target.value); pushHistoryState()" 
+             class="w-16 bg-slate-900 border border-slate-800 rounded-md text-center text-emerald-400 font-mono text-xs py-1 min-h-[32px] font-bold">
+    </div>
+    <input type="range" min="1" max="1000" :value="currentFaceTransform.scale" 
+           @input="updateFaceTransform('scale', $event.target.value)" 
+           @change="pushHistoryState()" 
+           class="w-full accent-emerald-600 bg-slate-800 h-2 rounded cursor-pointer">
+  </div>
+
+  <!-- 2. PEREGANGAN SKALA LEBAR & TINGGI INDEPENDEN (BEBAS TANPA MENTOK) -->
+  <div class="grid grid-cols-2 gap-2">
+    
+    <!-- Lebar (Kiri - Kanan / Stretch X) -->
+    <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+      <div class="flex justify-between items-center text-[11px]">
+        <span class="text-slate-300 truncate" title="Tarik Lebar Kiri-Kanan">Lebarin (Kiri-Kanan):</span>
+        <span class="font-mono text-emerald-400 font-bold" x-text="`${currentFaceTransform.stretchX || 100}%`"></span>
+      </div>
+      <input type="number" min="1" max="5000" :value="currentFaceTransform.stretchX || 100" 
+             @input="updateFaceTransform('stretchX', $event.target.value)" 
+             @change="pushHistoryState()" 
+             class="w-full bg-slate-900 border border-slate-800 rounded-md text-center text-emerald-400 font-mono text-xs py-1 min-h-[32px] font-bold">
+      <input type="range" min="1" max="1000" :value="currentFaceTransform.stretchX || 100" 
+             @input="updateFaceTransform('stretchX', $event.target.value)" 
+             @change="pushHistoryState()" 
+             class="w-full accent-emerald-600 bg-slate-800 h-2 rounded cursor-pointer">
+    </div>
+
+    <!-- Tinggi (Atas - Bawah / Stretch Y) -->
+    <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+      <div class="flex justify-between items-center text-[11px]">
+        <span class="text-slate-300 truncate" title="Tarik Tinggi Atas-Bawah">Tinggi (Atas-Bawah):</span>
+        <span class="font-mono text-emerald-400 font-bold" x-text="`${currentFaceTransform.stretchY || 100}%`"></span>
+      </div>
+      <input type="number" min="1" max="5000" :value="currentFaceTransform.stretchY || 100" 
+             @input="updateFaceTransform('stretchY', $event.target.value)" 
+             @change="pushHistoryState()" 
+             class="w-full bg-slate-900 border border-slate-800 rounded-md text-center text-emerald-400 font-mono text-xs py-1 min-h-[32px] font-bold">
+      <input type="range" min="1" max="1000" :value="currentFaceTransform.stretchY || 100" 
+             @input="updateFaceTransform('stretchY', $event.target.value)" 
+             @change="pushHistoryState()" 
+             class="w-full accent-emerald-600 bg-slate-800 h-2 rounded cursor-pointer">
+    </div>
+
+  </div>
+
+  <!-- 3. POSISI X & Y (BEBAS TANPA BATAS MENTOK) -->
+  <div class="grid grid-cols-2 gap-2">
+    <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+      <span class="text-xs text-slate-300">Pos X (px):</span>
+      <input type="number" min="-10000" max="10000" :value="currentFaceTransform.offsetX" @input="updateFaceTransform('offsetX', $event.target.value)" @change="pushHistoryState()" class="w-full bg-slate-900 border border-slate-800 rounded-md text-center text-emerald-400 font-mono text-xs py-1 min-h-[32px] font-bold">
+      <input type="range" min="-3000" max="3000" :value="currentFaceTransform.offsetX" @input="updateFaceTransform('offsetX', $event.target.value)" @change="pushHistoryState()" class="w-full accent-emerald-600 bg-slate-800 h-2 rounded cursor-pointer">
+    </div>
+
+    <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+      <span class="text-xs text-slate-300">Pos Y (px):</span>
+      <input type="number" min="-10000" max="10000" :value="currentFaceTransform.offsetY" @input="updateFaceTransform('offsetY', $event.target.value)" @change="pushHistoryState()" class="w-full bg-slate-900 border border-slate-800 rounded-md text-center text-emerald-400 font-mono text-xs py-1 min-h-[32px] font-bold">
+      <input type="range" min="-3000" max="3000" :value="currentFaceTransform.offsetY" @input="updateFaceTransform('offsetY', $event.target.value)" @change="pushHistoryState()" class="w-full accent-emerald-600 bg-slate-800 h-2 rounded cursor-pointer">
+    </div>
+  </div>
+</div>

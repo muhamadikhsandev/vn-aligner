@@ -1,0 +1,36 @@
+<!-- TAB 5: POSISI BADAN -->
+<div x-show="activeTab === 'posBody'" class="flex flex-col gap-2">
+  <div class="flex items-center justify-between">
+    <span class="text-xs font-bold text-blue-400">Transform Badan</span>
+    <div class="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800">
+      <button @click="setBodyMode('global')" class="px-2 py-1 text-[9px] font-bold rounded-md min-h-[28px]" :class="bodyMode === 'global' ? 'bg-blue-600 text-white' : 'text-slate-400'">Semua</button>
+      <button @click="setBodyMode('individual')" class="px-2 py-1 text-[9px] font-bold rounded-md min-h-[28px]" :class="bodyMode === 'individual' ? 'bg-blue-600 text-white' : 'text-slate-400'">Satuan</button>
+    </div>
+  </div>
+
+  <button @click="fitBodyToCanvas()" class="w-full py-2 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/50 rounded-lg text-xs font-bold cursor-pointer transition-all min-h-[38px]">
+    Fit Full Canvas Ratio
+  </button>
+
+  <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+    <div class="flex justify-between items-center text-xs">
+      <span class="text-slate-300">Skala Badan (Bisa >1000%):</span>
+      <input type="number" min="1" max="5000" :value="currentBodyTransform.scale" @input="updateBodyTransform('scale', $event.target.value); pushHistoryState()" class="w-16 bg-slate-900 border border-slate-800 rounded-md text-center text-blue-400 font-mono text-xs py-1 min-h-[32px] font-bold">
+    </div>
+    <input type="range" min="1" max="1000" :value="currentBodyTransform.scale" @input="updateBodyTransform('scale', $event.target.value)" @change="pushHistoryState()" class="w-full accent-blue-600 bg-slate-800 h-2 rounded cursor-pointer">
+  </div>
+
+  <div class="grid grid-cols-2 gap-2">
+    <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+      <span class="text-xs text-slate-300">Pos X (px):</span>
+      <input type="number" min="-10000" max="10000" :value="currentBodyTransform.offsetX" @input="updateBodyTransform('offsetX', $event.target.value)" @change="pushHistoryState()" class="w-full bg-slate-900 border border-slate-800 rounded-md text-center text-blue-400 font-mono text-xs py-1 min-h-[32px] font-bold">
+      <input type="range" min="-3000" max="3000" :value="currentBodyTransform.offsetX" @input="updateBodyTransform('offsetX', $event.target.value)" @change="pushHistoryState()" class="w-full accent-blue-600 bg-slate-800 h-2 rounded cursor-pointer">
+    </div>
+
+    <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+      <span class="text-xs text-slate-300">Pos Y (px):</span>
+      <input type="number" min="-10000" max="10000" :value="currentBodyTransform.offsetY" @input="updateBodyTransform('offsetY', $event.target.value)" @change="pushHistoryState()" class="w-full bg-slate-900 border border-slate-800 rounded-md text-center text-blue-400 font-mono text-xs py-1 min-h-[32px] font-bold">
+      <input type="range" min="-3000" max="3000" :value="currentBodyTransform.offsetY" @input="updateBodyTransform('offsetY', $event.target.value)" @change="pushHistoryState()" class="w-full accent-blue-600 bg-slate-800 h-2 rounded cursor-pointer">
+    </div>
+  </div>
+</div>

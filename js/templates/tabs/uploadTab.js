@@ -1,0 +1,68 @@
+export const uploadTabHTML = `
+<!-- TAB: UPLOAD & CAROUSEL ASSETS -->
+<div x-show="activeTab === 'upload'" class="flex flex-col gap-2">
+  <div class="grid grid-cols-2 gap-1.5">
+    <div class="bg-blue-950/40 border border-blue-800/60 rounded-xl p-2 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-[10px] font-semibold text-blue-200 flex items-center gap-1"><i data-lucide="user" class="w-3 h-3 text-blue-400"></i> Badan</span>
+        <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300" x-text="bodyAssetList.length + ' Item'"></span>
+      </div>
+      <label class="w-full flex items-center justify-center border border-dashed border-blue-700/60 hover:border-blue-500 bg-slate-950/60 transition-all rounded-lg py-1.5 px-2 cursor-pointer text-center min-h-[32px]">
+        <input type="file" @change="handleRefUpload($event)" accept="image/*" multiple class="hidden" />
+        <span class="text-[10px] font-medium text-slate-200 truncate" x-text="refFileName"></span>
+      </label>
+    </div>
+
+    <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-2 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-[10px] font-semibold text-slate-200 flex items-center gap-1"><i data-lucide="smile" class="w-3 h-3 text-emerald-400"></i> Wajah</span>
+        <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300" x-text="faceAssetList.length + ' Item'"></span>
+      </div>
+      <label class="w-full flex items-center justify-center border border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/60 transition-all rounded-lg py-1.5 px-2 cursor-pointer text-center min-h-[32px]">
+        <input type="file" @change="handleFacesUpload($event)" accept="image/*" multiple class="hidden" />
+        <span class="text-[10px] font-medium text-slate-200 truncate" x-text="faceFileName"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- CAROUSEL BADAN -->
+  <div x-show="bodyAssetList.length > 0" class="bg-slate-950/80 p-1.5 rounded-xl border border-slate-800 flex flex-col gap-1">
+    <div class="flex items-center justify-between text-[10px] text-slate-400 px-0.5">
+      <div class="flex items-center gap-1.5">
+        <span class="font-medium text-blue-300 flex items-center gap-1"><i data-lucide="user" class="w-3 h-3 text-blue-400"></i> Pilih Badan:</span>
+        <button @click="togglePlayBody()" class="px-1.5 py-0.5 rounded text-[9px] font-semibold text-white cursor-pointer" :class="isPlayingBody ? 'bg-rose-600 animate-pulse' : 'bg-blue-600'">
+          <span x-text="isPlayingBody ? 'Stop' : 'Play'"></span>
+        </button>
+      </div>
+      <span class="font-mono text-blue-400 font-bold" x-text="(activeBodyIndex + 1) + '/' + bodyAssetList.length"></span>
+    </div>
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 px-0.5 no-scrollbar touch-pan-x cursor-grab">
+      <template x-for="(item, index) in bodyAssetList" :key="item.id">
+        <div @click="selectBody(index)" class="relative flex-shrink-0 border cursor-pointer rounded-lg overflow-hidden bg-slate-900 flex flex-col items-center" :class="index === activeBodyIndex ? 'border-blue-400 ring-2 ring-blue-500/50 scale-105' : 'border-slate-800 opacity-60'">
+          <div class="w-9 h-9 overflow-hidden"><img :src="item.thumb" class="w-full h-full object-cover" /></div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- CAROUSEL WAJAH -->
+  <div x-show="faceAssetList.length > 0" class="bg-slate-950/80 p-1.5 rounded-xl border border-slate-800 flex flex-col gap-1">
+    <div class="flex items-center justify-between text-[10px] text-slate-400 px-0.5">
+      <div class="flex items-center gap-1.5">
+        <span class="font-medium text-emerald-300 flex items-center gap-1"><i data-lucide="smile" class="w-3 h-3 text-emerald-400"></i> Pilih Wajah:</span>
+        <button @click="togglePlayFace()" class="px-1.5 py-0.5 rounded text-[9px] font-semibold text-white cursor-pointer" :class="isPlayingFace ? 'bg-rose-600 animate-pulse' : 'bg-emerald-600'">
+          <span x-text="isPlayingFace ? 'Stop' : 'Play'"></span>
+        </button>
+      </div>
+      <span class="font-mono text-emerald-400 font-bold" x-text="(activeFaceIndex + 1) + '/' + faceAssetList.length"></span>
+    </div>
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 px-0.5 no-scrollbar touch-pan-x cursor-grab">
+      <template x-for="(item, index) in faceAssetList" :key="item.id">
+        <div @click="selectFace(index)" class="relative flex-shrink-0 border cursor-pointer rounded-lg overflow-hidden bg-slate-900 flex flex-col items-center" :class="index === activeFaceIndex ? 'border-emerald-500 ring-2 ring-emerald-500/50 scale-105' : 'border-slate-800 opacity-60'">
+          <div class="w-9 h-9 overflow-hidden"><img :src="item.thumb" class="w-full h-full object-cover" /></div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+`;

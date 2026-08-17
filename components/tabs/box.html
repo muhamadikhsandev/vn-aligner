@@ -1,0 +1,256 @@
+<!-- TAB MODE BOX SUPER LENGKAP DENGAN TITIK SUDUT -->
+<div x-show="activeTab === 'box'" class="flex flex-col gap-2">
+  <div class="bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-800/60 flex flex-col gap-2 shadow-lg">
+    
+    <!-- HEADER TAB MODE BOX -->
+    <div class="flex items-center justify-between gap-1">
+      <span class="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+        <i data-lucide="box" class="w-4 h-4 text-cyan-400"></i> Mode Box Super Lengkap
+      </span>
+      <div class="flex items-center gap-1">
+        <button @click="showGuidelines = !showGuidelines; renderPreview()" 
+                class="px-2 py-1 text-[9px] font-bold rounded cursor-pointer transition-all border flex items-center gap-1"
+                :class="showGuidelines ? 'bg-cyan-600 text-white border-cyan-400' : 'bg-slate-900 text-slate-400 border-slate-800'">
+          <i data-lucide="crosshair" class="w-3 h-3"></i> Overlay Box
+        </button>
+        <button @click="resetBox()" class="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded text-[9px] font-bold cursor-pointer transition-all">
+          Reset Box
+        </button>
+      </div>
+    </div>
+
+    <!-- TARGET SWITCHER (WAJAH VS BADAN) -->
+    <div class="flex items-center justify-between bg-slate-950 p-1.5 rounded-lg border border-slate-800">
+      <span class="text-[10px] font-semibold text-slate-300 flex items-center gap-1">
+        Target Box:
+      </span>
+      <div class="flex items-center gap-1">
+        <button @click="activeTarget = 'face'; activeTab = 'box'; renderPreview()" 
+                class="px-2.5 py-1 text-[9px] font-bold rounded-md transition-all cursor-pointer flex items-center gap-1"
+                :class="activeTarget === 'face' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-900 text-slate-400 hover:text-white'">
+          <i data-lucide="smile" class="w-3 h-3"></i> Wajah
+        </button>
+        <button @click="activeTarget = 'body'; activeTab = 'box'; renderPreview()" 
+                class="px-2.5 py-1 text-[9px] font-bold rounded-md transition-all cursor-pointer flex items-center gap-1"
+                :class="activeTarget === 'body' ? 'bg-blue-600 text-white shadow' : 'bg-slate-900 text-slate-400 hover:text-white'">
+          <i data-lucide="user" class="w-3 h-3"></i> Badan
+        </button>
+      </div>
+    </div>
+
+    <!-- VISUAL TITIK SUDUT ANCHOR GRID 3x3 -->
+    <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] font-semibold text-cyan-300 flex items-center gap-1">
+          <i data-lucide="grid" class="w-3 h-3 text-cyan-400"></i> Titik Sudut Acuan (Anchor):
+        </span>
+        <span class="text-[9px] font-mono text-slate-400 uppercase" x-text="boxAnchor || 'CENTER'"></span>
+      </div>
+      <div class="grid grid-cols-3 gap-1 w-full max-w-[210px] mx-auto bg-slate-900 p-1.5 rounded-lg border border-slate-800">
+        <!-- NW -->
+        <button @click="setCornerAnchor('nw')" class="py-1 rounded text-[9px] font-bold border transition-all flex items-center justify-center gap-1 cursor-pointer" :class="boxAnchor === 'nw' ? 'bg-cyan-600 border-cyan-400 text-white shadow' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'">
+          <i data-lucide="arrow-up-left" class="w-3 h-3"></i> NW
+        </button>
+        <!-- N -->
+        <button @click="setCornerAnchor('n')" class="py-1 rounded text-[9px] font-bold border transition-all flex items-center justify-center gap-1 cursor-pointer" :class="boxAnchor === 'n' ? 'bg-cyan-600 border-cyan-400 text-white shadow' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'">
+          <i data-lucide="arrow-up" class="w-3 h-3"></i> N
+        </button>
+        <!-- NE -->
+        <button @click="setCornerAnchor('ne')" class="py-1 rounded text-[9px] font-bold border transition-all flex items-center justify-center gap-1 cursor-pointer" :class="boxAnchor === 'ne' ? 'bg-cyan-600 border-cyan-400 text-white shadow' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'">
+          <i data-lucide="arrow-up-right" class="w-3 h-3"></i> NE
+        </button>
+        <!-- W -->
+        <button @click="setCornerAnchor('w')" class="py-1 rounded text-[9px] font-bold border transition-all flex items-center justify-center gap-1 cursor-pointer" :class="boxAnchor === 'w' ? 'bg-cyan-600 border-cyan-400 text-white shadow' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'">
+          <i data-lucide="arrow-left" class="w-3 h-3"></i> W
+        </button>
+        <!-- CENTER -->
+        <button @click="setCornerAnchor('center')" class="py-1 rounded text-[9px] font-bold border transition-all flex items-center justify-center gap-1 cursor-pointer" :class="boxAnchor === 'center' ? 'bg-cyan-600 border-cyan-400 text-white shadow' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'">
+          <i data-lucide="crosshair" class="w-3 h-3"></i> Center
+        </button>
+        <!-- E -->
+        <button @click="setCornerAnchor('e')" class="py-1 rounded text-[9px] font-bold border transition-all flex items-center justify-center gap-1 cursor-pointer" :class="boxAnchor === 'e' ? 'bg-cyan-600 border-cyan-400 text-white shadow' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'">
+          <i data-lucide="arrow-right" class="w-3 h-3"></i> E
+        </button>
+        <!-- SW -->
+        <button @click="setCornerAnchor('sw')" class="py-1 rounded text-[9px] font-bold border transition-all flex items-center justify-center gap-1 cursor-pointer" :class="boxAnchor === 'sw' ? 'bg-cyan-600 border-cyan-400 text-white shadow' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'">
+          <i data-lucide="arrow-down-left" class="w-3 h-3"></i> SW
+        </button>
+        <!-- S -->
+        <button @click="setCornerAnchor('s')" class="py-1 rounded text-[9px] font-bold border transition-all flex items-center justify-center gap-1 cursor-pointer" :class="boxAnchor === 's' ? 'bg-cyan-600 border-cyan-400 text-white shadow' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'">
+          <i data-lucide="arrow-down" class="w-3 h-3"></i> S
+        </button>
+        <!-- SE -->
+        <button @click="setCornerAnchor('se')" class="py-1 rounded text-[9px] font-bold border transition-all flex items-center justify-center gap-1 cursor-pointer" :class="boxAnchor === 'se' ? 'bg-cyan-600 border-cyan-400 text-white shadow' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'">
+          <i data-lucide="arrow-down-right" class="w-3 h-3"></i> SE
+        </button>
+      </div>
+    </div>
+
+    <!-- DIMENSI EXACT BOX (W & H PIXEL) -->
+    <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+      <div class="flex justify-between items-center text-xs">
+        <span class="text-slate-300 font-semibold flex items-center gap-1">
+          <i data-lucide="scaling" class="w-3.5 h-3.5 text-cyan-400"></i> Dimensi Box Pixels:
+        </span>
+        <button @click="boxLockAspect = !boxLockAspect" class="px-2 py-0.5 rounded text-[9px] font-bold border transition-all cursor-pointer flex items-center gap-1" :class="boxLockAspect ? 'bg-cyan-900 border-cyan-500 text-cyan-300' : 'bg-slate-900 border-slate-800 text-slate-400'">
+          <i data-lucide="lock" class="w-3 h-3"></i> Lock Aspect
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="flex flex-col gap-1">
+          <span class="text-[10px] text-slate-400">Lebar (W px):</span>
+          <input type="number" min="1" max="10000" :value="currentBoxWidth" 
+                 @input="updateBoxDimension('w', $event.target.value)"
+                 @change="pushHistoryState()"
+                 class="w-full bg-slate-900 border border-slate-700 rounded-md text-center text-cyan-300 font-mono text-xs py-1 font-bold min-h-[32px]">
+        </div>
+        <div class="flex flex-col gap-1">
+          <span class="text-[10px] text-slate-400">Tinggi (H px):</span>
+          <input type="number" min="1" max="10000" :value="currentBoxHeight" 
+                 @input="updateBoxDimension('h', $event.target.value)"
+                 @change="pushHistoryState()"
+                 class="w-full bg-slate-900 border border-slate-700 rounded-md text-center text-cyan-300 font-mono text-xs py-1 font-bold min-h-[32px]">
+        </div>
+      </div>
+    </div>
+
+    <!-- SKALA UTAMA & STRETCH UNLIMITED (TANPA MENTOK) -->
+    <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+      <div class="flex justify-between items-center text-xs">
+        <span class="text-slate-300 font-medium flex items-center gap-1">
+          <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-cyan-400"></i> Skala Utama (Bisa >1000%):
+        </span>
+        <input type="number" min="1" max="5000" :value="activeTarget === 'face' ? currentFaceTransform.scale : currentBodyTransform.scale" 
+               @input="activeTarget === 'face' ? updateFaceTransform('scale', $event.target.value) : updateBodyTransform('scale', $event.target.value); pushHistoryState()" 
+               class="w-16 bg-slate-900 border border-slate-700 rounded-md text-center text-cyan-400 font-mono text-xs py-1 font-bold min-h-[32px]">
+      </div>
+      <input type="range" min="1" max="1000" :value="activeTarget === 'face' ? currentFaceTransform.scale : currentBodyTransform.scale" 
+             @input="activeTarget === 'face' ? updateFaceTransform('scale', $event.target.value) : updateBodyTransform('scale', $event.target.value)" 
+             @change="pushHistoryState()" 
+             class="w-full accent-cyan-500 bg-slate-800 h-2 rounded cursor-pointer">
+    </div>
+
+    <!-- STRETCH LEBAR X & TINGGI Y (UNLIMITED) -->
+    <div class="grid grid-cols-2 gap-2">
+      <!-- Stretch X -->
+      <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 flex flex-col gap-1">
+        <div class="flex justify-between items-center text-[10px]">
+          <span class="text-slate-300 flex items-center gap-1"><i data-lucide="move-horizontal" class="w-3 h-3 text-cyan-400"></i> Stretch X:</span>
+          <span class="font-mono text-cyan-400 font-bold" x-text="`${(activeTarget === 'face' ? currentFaceTransform.stretchX : currentBodyTransform.stretchX) || 100}%`"></span>
+        </div>
+        <input type="number" min="1" max="5000" :value="(activeTarget === 'face' ? currentFaceTransform.stretchX : currentBodyTransform.stretchX) || 100" 
+               @input="activeTarget === 'face' ? updateFaceTransform('stretchX', $event.target.value) : updateBodyTransform('stretchX', $event.target.value); pushHistoryState()" 
+               class="w-full bg-slate-900 border border-slate-700 rounded-md text-center text-cyan-400 font-mono text-xs py-1 font-bold min-h-[30px]">
+        <input type="range" min="1" max="1000" :value="(activeTarget === 'face' ? currentFaceTransform.stretchX : currentBodyTransform.stretchX) || 100" 
+               @input="activeTarget === 'face' ? updateFaceTransform('stretchX', $event.target.value) : updateBodyTransform('stretchX', $event.target.value)" 
+               @change="pushHistoryState()" 
+               class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+      </div>
+
+      <!-- Stretch Y -->
+      <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 flex flex-col gap-1">
+        <div class="flex justify-between items-center text-[10px]">
+          <span class="text-slate-300 flex items-center gap-1"><i data-lucide="move-vertical" class="w-3 h-3 text-cyan-400"></i> Stretch Y:</span>
+          <span class="font-mono text-cyan-400 font-bold" x-text="`${(activeTarget === 'face' ? currentFaceTransform.stretchY : currentBodyTransform.stretchY) || 100}%`"></span>
+        </div>
+        <input type="number" min="1" max="5000" :value="(activeTarget === 'face' ? currentFaceTransform.stretchY : currentBodyTransform.stretchY) || 100" 
+               @input="activeTarget === 'face' ? updateFaceTransform('stretchY', $event.target.value) : updateBodyTransform('stretchY', $event.target.value); pushHistoryState()" 
+               class="w-full bg-slate-900 border border-slate-700 rounded-md text-center text-cyan-400 font-mono text-xs py-1 font-bold min-h-[30px]">
+        <input type="range" min="1" max="1000" :value="(activeTarget === 'face' ? currentFaceTransform.stretchY : currentBodyTransform.stretchY) || 100" 
+               @input="activeTarget === 'face' ? updateFaceTransform('stretchY', $event.target.value) : updateBodyTransform('stretchY', $event.target.value)" 
+               @change="pushHistoryState()" 
+               class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+      </div>
+    </div>
+
+    <!-- POSISI X & Y (UNLIMITED NUDGE & INPUT) -->
+    <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 flex flex-col gap-2">
+      <span class="text-xs font-semibold text-slate-300 flex items-center gap-1">
+        <i data-lucide="move" class="w-3.5 h-3.5 text-cyan-400"></i> Posisi Koordinat Box:
+      </span>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center justify-between text-[10px] text-slate-400">
+            <span>Pos X (px):</span>
+            <div class="flex gap-1">
+              <button @click="nudgePos('X', -10)" class="px-1 bg-slate-900 hover:bg-slate-800 text-cyan-300 rounded border border-slate-800 font-mono text-[9px]">-10</button>
+              <button @click="nudgePos('X', 10)" class="px-1 bg-slate-900 hover:bg-slate-800 text-cyan-300 rounded border border-slate-800 font-mono text-[9px]">+10</button>
+            </div>
+          </div>
+          <input type="number" min="-10000" max="10000" :value="activeTarget === 'face' ? currentFaceTransform.offsetX : currentBodyTransform.offsetX" 
+                 @input="activeTarget === 'face' ? updateFaceTransform('offsetX', $event.target.value) : updateBodyTransform('offsetX', $event.target.value); pushHistoryState()" 
+                 class="w-full bg-slate-900 border border-slate-700 rounded-md text-center text-cyan-300 font-mono text-xs py-1 font-bold min-h-[32px]">
+          <input type="range" min="-3000" max="3000" :value="activeTarget === 'face' ? currentFaceTransform.offsetX : currentBodyTransform.offsetX" 
+                 @input="activeTarget === 'face' ? updateFaceTransform('offsetX', $event.target.value) : updateBodyTransform('offsetX', $event.target.value)" 
+                 @change="pushHistoryState()" 
+                 class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center justify-between text-[10px] text-slate-400">
+            <span>Pos Y (px):</span>
+            <div class="flex gap-1">
+              <button @click="nudgePos('Y', -10)" class="px-1 bg-slate-900 hover:bg-slate-800 text-cyan-300 rounded border border-slate-800 font-mono text-[9px]">-10</button>
+              <button @click="nudgePos('Y', 10)" class="px-1 bg-slate-900 hover:bg-slate-800 text-cyan-300 rounded border border-slate-800 font-mono text-[9px]">+10</button>
+            </div>
+          </div>
+          <input type="number" min="-10000" max="10000" :value="activeTarget === 'face' ? currentFaceTransform.offsetY : currentBodyTransform.offsetY" 
+                 @input="activeTarget === 'face' ? updateFaceTransform('offsetY', $event.target.value) : updateBodyTransform('offsetY', $event.target.value); pushHistoryState()" 
+                 class="w-full bg-slate-900 border border-slate-700 rounded-md text-center text-cyan-300 font-mono text-xs py-1 font-bold min-h-[32px]">
+          <input type="range" min="-3000" max="3000" :value="activeTarget === 'face' ? currentFaceTransform.offsetY : currentBodyTransform.offsetY" 
+                 @input="activeTarget === 'face' ? updateFaceTransform('offsetY', $event.target.value) : updateBodyTransform('offsetY', $event.target.value)" 
+                 @change="pushHistoryState()" 
+                 class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+        </div>
+      </div>
+    </div>
+
+    <!-- PRESET 1-KLIK PRESISI BOX SUITE -->
+    <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 flex flex-col gap-1.5">
+      <span class="text-xs font-semibold text-slate-300 flex items-center gap-1">
+        <i data-lucide="crosshair" class="w-3.5 h-3.5 text-cyan-400"></i> Alignment Box 1-Klik:
+      </span>
+      <div class="grid grid-cols-3 gap-1">
+        <button @click="alignBox('centerBoth')" class="py-1.5 bg-slate-900 hover:bg-cyan-600 text-slate-300 hover:text-white rounded border border-slate-800 text-[10px] font-bold cursor-pointer transition-all flex items-center justify-center gap-1">
+          <i data-lucide="crosshair" class="w-3 h-3"></i> Center X&Y
+        </button>
+        <button @click="alignBox('centerX')" class="py-1.5 bg-slate-900 hover:bg-cyan-600 text-slate-300 hover:text-white rounded border border-slate-800 text-[10px] font-bold cursor-pointer transition-all flex items-center justify-center gap-1">
+          <i data-lucide="align-horizontal-justify-center" class="w-3 h-3"></i> Center Horiz
+        </button>
+        <button @click="alignBox('centerY')" class="py-1.5 bg-slate-900 hover:bg-cyan-600 text-slate-300 hover:text-white rounded border border-slate-800 text-[10px] font-bold cursor-pointer transition-all flex items-center justify-center gap-1">
+          <i data-lucide="align-vertical-justify-center" class="w-3 h-3"></i> Center Vert
+        </button>
+
+        <button @click="alignBox('left')" class="py-1.5 bg-slate-900 hover:bg-cyan-600 text-slate-300 hover:text-white rounded border border-slate-800 text-[10px] font-bold cursor-pointer transition-all flex items-center justify-center gap-1">
+          <i data-lucide="align-left" class="w-3 h-3"></i> Rata Kiri
+        </button>
+        <button @click="alignBox('right')" class="py-1.5 bg-slate-900 hover:bg-cyan-600 text-slate-300 hover:text-white rounded border border-slate-800 text-[10px] font-bold cursor-pointer transition-all flex items-center justify-center gap-1">
+          <i data-lucide="align-right" class="w-3 h-3"></i> Rata Kanan
+        </button>
+        <button @click="alignBox('top')" class="py-1.5 bg-slate-900 hover:bg-cyan-600 text-slate-300 hover:text-white rounded border border-slate-800 text-[10px] font-bold cursor-pointer transition-all flex items-center justify-center gap-1">
+          <i data-lucide="align-start-vertical" class="w-3 h-3"></i> Rata Atas
+        </button>
+
+        <button @click="alignBox('bottom')" class="py-1.5 bg-slate-900 hover:bg-cyan-600 text-slate-300 hover:text-white rounded border border-slate-800 text-[10px] font-bold cursor-pointer transition-all flex items-center justify-center gap-1">
+          <i data-lucide="align-end-vertical" class="w-3 h-3"></i> Rata Bawah
+        </button>
+        <button @click="fitBoxCanvas()" class="py-1.5 bg-cyan-900/60 hover:bg-cyan-600 text-cyan-200 hover:text-white rounded border border-cyan-700/60 text-[10px] font-bold cursor-pointer transition-all col-span-2 flex items-center justify-center gap-1">
+          <i data-lucide="maximize" class="w-3.5 h-3.5"></i> Stretch Full Canvas Box
+        </button>
+      </div>
+    </div>
+
+    <!-- PENGATURAN UKURAN TITIK SUDUT HANDLE -->
+    <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 flex items-center justify-between">
+      <span class="text-[10px] font-semibold text-slate-300 flex items-center gap-1">
+        <i data-lucide="circle-dot" class="w-3 h-3 text-cyan-400"></i> Ukuran Titik Sudut:
+      </span>
+      <div class="flex items-center gap-1">
+        <button @click="handleSize = 14; renderPreview()" class="px-2 py-0.5 text-[9px] font-bold rounded border cursor-pointer transition-all" :class="handleSize === 14 ? 'bg-cyan-600 border-cyan-400 text-white' : 'bg-slate-900 border-slate-800 text-slate-400'">Sedang</button>
+        <button @click="handleSize = 22; renderPreview()" class="px-2 py-0.5 text-[9px] font-bold rounded border cursor-pointer transition-all" :class="handleSize === 22 ? 'bg-cyan-600 border-cyan-400 text-white' : 'bg-slate-900 border-slate-800 text-slate-400'">Besar</button>
+        <button @click="handleSize = 28; renderPreview()" class="px-2 py-0.5 text-[9px] font-bold rounded border cursor-pointer transition-all" :class="handleSize === 28 ? 'bg-cyan-600 border-cyan-400 text-white' : 'bg-slate-900 border-slate-800 text-slate-400'">Super (Touch)</button>
+      </div>
+    </div>
+
+  </div>
+</div>

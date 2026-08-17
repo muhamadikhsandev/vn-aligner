@@ -1,0 +1,103 @@
+<!-- TAB BG: BACKGROUND PREVIEW CONTROLLER -->
+<div x-show="activeTab === 'bg'" class="flex flex-col gap-2">
+  <div class="bg-amber-950/30 p-2.5 rounded-xl border border-amber-800/50 flex flex-col gap-2">
+    <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+      <i data-lucide="image" class="w-4 h-4 text-amber-400"></i> Background Canvas (Hanya Preview)
+    </span>
+    <p class="text-[10px] text-slate-400">Pilih mode background untuk kenyamanan mengedit. Hasil unduhan akan tetap transparan.</p>
+
+    <div class="grid grid-cols-3 gap-1.5">
+      <button @click="bgType = 'transparent'; renderPreview()" 
+              class="px-2 py-2 rounded-lg border text-[10px] font-semibold flex flex-col items-center justify-center min-h-[38px]"
+              :class="bgType === 'transparent' ? 'border-amber-500 bg-amber-950/50 text-amber-300' : 'border-slate-800 bg-slate-900 text-slate-300'">
+        Transparan
+      </button>
+      <button @click="bgType = 'color'; renderPreview()" 
+              class="px-2 py-2 rounded-lg border text-[10px] font-semibold flex flex-col items-center justify-center min-h-[38px]"
+              :class="bgType === 'color' ? 'border-amber-500 bg-amber-950/50 text-amber-300' : 'border-slate-800 bg-slate-900 text-slate-300'">
+        Warna Custom
+      </button>
+      <button @click="bgType = 'image'; renderPreview()" 
+              class="px-2 py-2 rounded-lg border text-[10px] font-semibold flex flex-col items-center justify-center min-h-[38px]"
+              :class="bgType === 'image' ? 'border-amber-500 bg-amber-950/50 text-amber-300' : 'border-slate-800 bg-slate-900 text-slate-300'">
+        Gambar BG
+      </button>
+    </div>
+
+    <!-- CUSTOM COLOR PICKER UI -->
+    <div x-show="bgType === 'color'" class="flex flex-col gap-2 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80 mt-1">
+      
+      <!-- Badge Warna Aktif & Input HEX -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg border border-slate-700 shadow-inner flex-shrink-0" :style="`background-color: ${bgColor};`"></div>
+          <div class="flex flex-col">
+            <span class="text-[10px] text-slate-400 font-semibold">Warna Aktif</span>
+            <span class="font-mono text-xs font-bold text-amber-400" x-text="bgColor.toUpperCase()"></span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-md px-2 py-1">
+          <span class="text-[10px] text-slate-500 font-mono">HEX</span>
+          <input type="text" :value="bgColor" @input="updateBgHex($event.target.value)" 
+                 class="w-16 bg-transparent text-xs font-mono text-amber-300 focus:outline-none uppercase text-center" 
+                 maxlength="7">
+        </div>
+      </div>
+
+      <!-- Preset Palette Swatches -->
+      <div class="flex flex-col gap-1 pt-1 border-t border-slate-800/80">
+        <span class="text-[10px] font-medium text-slate-400">Palet Warna Cepat:</span>
+        <div class="grid grid-cols-7 gap-1.5">
+          <template x-for="hex in presetBgColors" :key="hex">
+            <div @click="setBgColor(hex)" 
+                 class="w-full aspect-square rounded-md border cursor-pointer transition-transform hover:scale-110 flex items-center justify-center"
+                 :style="`background-color: ${hex};`"
+                 :class="bgColor.toLowerCase() === hex.toLowerCase() ? 'border-amber-400 ring-2 ring-amber-400/50 scale-105' : 'border-slate-800 opacity-80 hover:opacity-100'">
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Custom RGB Adjuster Sliders -->
+      <div class="flex flex-col gap-1.5 pt-1 border-t border-slate-800/80">
+        <span class="text-[10px] font-medium text-slate-400">Pengaturan RGB Custom:</span>
+        
+        <!-- Red Slider -->
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-bold text-red-400 w-3">R</span>
+          <input type="range" min="0" max="255" :value="bgRgb.r" 
+                 @input="updateBgRgb('r', $event.target.value)" 
+                 class="flex-1 accent-red-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <span class="font-mono text-[10px] text-slate-300 w-7 text-right" x-text="bgRgb.r"></span>
+        </div>
+
+        <!-- Green Slider -->
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-bold text-emerald-400 w-3">G</span>
+          <input type="range" min="0" max="255" :value="bgRgb.g" 
+                 @input="updateBgRgb('g', $event.target.value)" 
+                 class="flex-1 accent-emerald-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <span class="font-mono text-[10px] text-slate-300 w-7 text-right" x-text="bgRgb.g"></span>
+        </div>
+
+        <!-- Blue Slider -->
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-bold text-blue-400 w-3">B</span>
+          <input type="range" min="0" max="255" :value="bgRgb.b" 
+                 @input="updateBgRgb('b', $event.target.value)" 
+                 class="flex-1 accent-blue-500 bg-slate-800 h-1.5 rounded cursor-pointer">
+          <span class="font-mono text-[10px] text-slate-300 w-7 text-right" x-text="bgRgb.b"></span>
+        </div>
+      </div>
+
+    </div>
+
+    <div x-show="bgType === 'image'" class="flex flex-col gap-1.5 mt-1">
+      <label class="w-full flex items-center justify-center border border-dashed border-amber-700/60 hover:border-amber-500 bg-slate-950/60 transition-all rounded-lg py-2 px-3 cursor-pointer text-center min-h-[38px]">
+        <input type="file" @change="handleBgImageUpload($event)" accept="image/*" class="hidden" />
+        <span class="text-xs font-medium text-slate-200 truncate" x-text="bgFileName"></span>
+      </label>
+    </div>
+  </div>
+</div>

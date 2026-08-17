@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-950 text-slate-100 overflow-hidden">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VN Multi-Face Expression Aligner Pro</title>
+  <meta name="description" content="Tool canggih untuk mengatur posisi wajah pada aset Visual Novel dengan presisi tinggi.">
+
+  <!-- Third Party CDNs -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!--
+    RELIABLE ALPINE INIT PATTERN:
+    - app.js is a module (implicitly deferred, resolves all imports before running)
+    - Alpine is loaded via module import inside app.js using CDN ESM URL
+    - This guarantees: app.js runs -> imports Alpine ESM -> injectComponents -> 
+      Alpine.data() register -> Alpine.start() -> Alpine scans DOM
+    - No race conditions possible since everything is in one module graph
+  -->
+  <script type="module" src="js/app.js"></script>
+</head>
+<body class="h-full w-full flex flex-col font-sans antialiased select-none overflow-hidden bg-slate-950" x-data="alignerApp()">
+
+  <!-- Component Mount: Header Navbar -->
+  <div id="app-header"></div>
+
+  <!-- Component Mount: Main Workspace Layout -->
+  <main class="flex-1 w-full max-w-7xl mx-auto flex flex-col lg:grid lg:grid-cols-12 overflow-hidden p-1.5 sm:p-2 gap-2 h-[calc(100vh-50px)] relative">
+    <!-- Component Mount: Preview Canvas & Carousels -->
+    <div id="app-preview"></div>
+
+    <!-- Component Mount: Control Panel & 9 Tabs -->
+    <div id="app-panel"></div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => window.lucide?.createIcons());
+    window.addEventListener('load', () => window.lucide?.createIcons());
+  </script>
+</body>
+</html>

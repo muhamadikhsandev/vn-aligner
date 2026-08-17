@@ -1,0 +1,44 @@
+// js/templates/header.js
+// Header navbar component HTML template
+
+export const headerHTML = `
+<header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur shrink-0 px-3 py-2 z-30">
+  <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2">
+      <div class="p-1.5 bg-blue-600/20 text-blue-400 rounded-lg border border-blue-500/30 shrink-0 flex items-center justify-center">
+        <i data-lucide="pen-tool" class="w-4 h-4 text-blue-400"></i>
+      </div>
+      <div class="truncate">
+        <h1 class="text-xs font-bold text-white leading-tight truncate">VN Aligner Pro</h1>
+        <p class="text-[10px] text-slate-400 font-mono" x-text="CANVAS_W + 'x' + CANVAS_H + 'px'"></p>
+      </div>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <div class="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800">
+        <button @click="undo()" :disabled="!canUndo || isLocked"
+                class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-md transition-all cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center"
+                title="Undo (Ctrl+Z)">
+          <i data-lucide="undo-2" class="w-4 h-4"></i>
+        </button>
+        <button @click="redo()" :disabled="!canRedo || isLocked"
+                class="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-md transition-all cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center"
+                title="Redo (Ctrl+Y)">
+          <i data-lucide="redo-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <button @click="resetPos()" :disabled="isLocked || !isReady"
+              class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+              title="Reset Posisi">
+        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+      </button>
+      <button @click="toggleLock()"
+              class="flex items-center gap-1.5 border px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+              :class="isLocked ? 'bg-rose-950/80 text-rose-300 border-rose-800' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'">
+        <i x-show="isLocked" data-lucide="lock" class="w-3.5 h-3.5 text-rose-400"></i>
+        <i x-show="!isLocked" data-lucide="unlock" class="w-3.5 h-3.5 text-blue-400"></i>
+        <span class="text-xs" x-text="isLocked ? 'Kunci' : 'Bebas'"></span>
+      </button>
+    </div>
+  </div>
+</header>
+`;

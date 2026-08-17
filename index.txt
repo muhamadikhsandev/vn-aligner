@@ -1,0 +1,181 @@
+MASALAH:
+Saya tidak hanya ingin menggeser atau resize wajah.
+
+Setiap body/outfit memiliki bentuk "lubang wajah" yang sama. Saya ingin membuat fitur yang memungkinkan pengguna mengambil bentuk/lubang wajah dari body sebagai TEMPLATE, kemudian wajah asli dideformasi agar mengikuti bentuk template tersebut.
+
+KONSEP FITUR:
+
+ACE SHAPE TEMPLATE
+Buat mode baru bernama "Cetak Bentuk Wajah" atau "Face Shape".
+
+User dapat memilih sebuah body/outfit lalu menggambar outline/area pada bagian lubang wajah.
+
+Contoh:
+- User memilih body
+- User masuk ke mode Face Shape
+- User menggambar polygon/outline pada area wajah body
+- Bentuk tersebut disimpan sebagai target shape/template
+
+Template harus menyimpan koordinat bentuk secara relatif terhadap canvas/body sehingga tetap bisa digunakan ketika ukuran preview berubah.
+
+APPLY FACE SHAPE
+Setelah template dibuat:
+- User memilih asset wajah asli
+- User memilih Face Shape Template
+- Tool melakukan deformasi wajah agar mengikuti target shape
+
+PENTING:
+Jangan sekadar melakukan crop/masking.
+
+Saya ingin:
+SOURCE FACE
+        ↓
+DEFORMATION / WARP
+        ↓
+TARGET FACE SHAPE
+
+Pixel/detail wajah asli harus tetap dipertahankan sebisa mungkin.
+
+NON-DESTRUCTIVE EDITING
+Jangan pernah mengubah file wajah original.
+
+Struktur konsep:
+Original Face
+    ↓
+Working Copy
+    ↓
+Warp / Deformation
+    ↓
+Preview Result
+    ↓
+Export
+
+Harus tersedia Reset sehingga hasil deformasi dapat dikembalikan ke wajah original kapan saja.
+
+PRESERVE FACIAL DETAILS
+Ini bagian paling penting.
+
+Jangan melakukan deformasi secara brutal terhadap seluruh wajah.
+
+Area luar wajah seperti:
+- pipi
+- rahang
+- sisi kepala
+
+boleh mengalami deformasi lebih besar.
+
+Tetapi detail internal seperti:
+- mata
+- alis
+- hidung
+- mulut
+- ekspresi
+
+harus dipertahankan sebisa mungkin.
+
+Jika diperlukan, gunakan mesh deformation dengan kontrol/weight agar bagian internal wajah mengalami deformasi lebih kecil daripada bagian luar.
+
+TEKNOLOGI DEFORMATION
+
+Evaluasi pendekatan yang paling cocok untuk browser/web application.
+
+Prioritaskan:
+- Mesh Warp
+- Grid Deformation
+- Thin Plate Spline
+- Control Point / Landmark based deformation
+
+Jangan langsung memilih teknologi hanya berdasarkan nama. Jelaskan secara singkat trade-off setiap pendekatan dan pilih yang paling cocok untuk aplikasi ini.
+
+Prioritas:
+1. kualitas hasil
+2. mempertahankan detail wajah
+3. performa browser
+4. mudah dikontrol user
+5. tidak merusak original asset
+
+RESOLUTION
+
+Jangan melakukan deformation pada resolusi preview kecil lalu memperbesar hasilnya.
+
+Jika memungkinkan:
+- gunakan resolution asli/master untuk proses deformation
+- gunakan canvas preview hanya untuk visualisasi
+- export dari hasil deformation resolusi tinggi
+
+USER EXPERIENCE
+Jangan membuat fitur terlalu rumit.
+
+Workflow ideal:
+
+Upload Body
+↓
+Pilih "Face Shape"
+↓
+Gambar bentuk lubang wajah
+↓
+Save Template
+↓
+Pilih Face
+↓
+Apply Template
+↓
+Preview
+↓
+Jika kurang pas → adjust
+↓
+Export
+
+Tambahkan kemampuan untuk:
+- menggeser control point
+- menambah/menghapus control point jika diperlukan
+- melihat outline target
+- toggle before/after
+- reset deformation
+- undo/redo
+
+Fitur baru harus terintegrasi dengan sistem yang sudah ada, bukan mengganti sistem lama.
+
+Setelah MVP berhasil dan kualitas deformasi terbukti bagus, baru pertimbangkan:
+- template library
+- multiple templates
+- advanced mesh controls
+- landmark preservation
+- batch processing
+
+VISUAL FEEDBACK
+
+Saat user membuat template, tampilkan:
+- outline target
+- control points
+- bounding area
+- source face
+- target shape
+
+Saat deformation aktif, tampilkan before/after atau overlay sehingga user dapat melihat apakah wajah benar-benar mengikuti bentuk target.
+
+IMPORTANT DESIGN PRINCIPLE
+
+Jangan membuat aplikasi terlalu bergantung pada automatic AI face detection.
+
+Saya ingin user tetap memiliki kontrol manual karena asset visual novel memiliki bentuk dan style yang sangat spesifik.
+
+Automatic detection boleh digunakan sebagai bantuan jika tersedia, tetapi manual control harus tetap menjadi sumber kebenaran utama.
+
+ACCEPTANCE CRITERIA
+
+Fitur dianggap berhasil jika:
+
+- User dapat menggambar target face shape pada body.
+- Target shape dapat disimpan.
+- User dapat menerapkan template ke face.
+- Wajah berubah bentuk mengikuti target, bukan hanya ter-crop.
+- Detail wajah tetap relatif tajam.
+- Original face tidak berubah.
+- User dapat reset hasil deformation.
+- X/Y dan scale tetap dapat digunakan setelah deformation.
+- Hasil export menggunakan resolusi master yang layak.
+- Tidak merusak workflow asset lama.
+
+
+"mengambil bentuk lubang wajah sebagai template dan melakukan non-destructive deformation terhadap wajah agar mengikuti template tersebut tanpa merusak detail asli."

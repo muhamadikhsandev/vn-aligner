@@ -1,0 +1,174 @@
+::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.touch-none {
+  touch-action: none;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-fast {
+  animation: spin 0.8s linear infinite;
+}
+
+.preview-camera-container {
+  transition: transform 0.15s ease-out;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.cursor-pen-edit {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%232563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>') 0 20, pointer !important;
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type=number] { 
+  -moz-appearance: textfield; 
+}
+
+.no-scrollbar::-webkit-scrollbar { 
+  display: none; 
+}
+.no-scrollbar { 
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
+}
+
+/* Full Area Checkerboard Pattern */
+.checkerboard-bg {
+  background-color: #0b0f19;
+  background-image: 
+    linear-gradient(45deg, #161f33 25%, transparent 25%), 
+    linear-gradient(-45deg, #161f33 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #161f33 75%), 
+    linear-gradient(-45deg, transparent 75%, #161f33 75%);
+  background-size: 24px 24px;
+  background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+}
+
+/* Fix & Styling untuk Lucide SVG Icons */
+i[data-lucide], svg.lucide {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Vertical Custom Range Input untuk Scrollbar Kanvas */
+.range-vertical {
+  writing-mode: bt-lr; /* Standard & legacy browsers */
+  writing-mode: vertical-lr; /* Vertical direction */
+  direction: rtl; /* Flip top to bottom */
+  -webkit-appearance: slider-vertical;
+  width: 100%;
+}
+
+/* ===== KAPSUL THUMB — Range Input Horizontal ===== */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  border-radius: 9999px;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  background: rgba(51, 65, 85, 0.5);
+  border-radius: 9999px;
+  height: 4px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  /* Kapsul: lebar > tinggi */
+  width: 28px;
+  height: 10px;
+  border-radius: 9999px;
+  background: #7aa2c8;
+  border: 2px solid #4a6fa5;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  margin-top: -3px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  background: #a8c4e0;
+  transform: scaleX(1.12);
+}
+
+input[type=range]::-moz-range-thumb {
+  width: 28px;
+  height: 10px;
+  border-radius: 9999px;
+  background: #7aa2c8;
+  border: 2px solid #4a6fa5;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* ===== KAPSUL THUMB — Range Input Vertikal ===== */
+.range-vertical::-webkit-slider-runnable-track {
+  background: rgba(51, 65, 85, 0.5);
+  border-radius: 9999px;
+  width: 4px;
+}
+
+.range-vertical::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  /* Kapsul vertikal: tinggi > lebar */
+  width: 10px;
+  height: 28px;
+  border-radius: 9999px;
+  background: #7aa2c8;
+  border: 2px solid #4a6fa5;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  margin-left: -3px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.range-vertical::-webkit-slider-thumb:hover {
+  background: #a8c4e0;
+  transform: scaleY(1.12);
+}
+
+/* Responsive Canvas & Touch Target Helpers */
+#previewCanvas {
+  touch-action: none;
+  user-select: none;
+}
+
+/* Modern Rounded Pill Button System */
+button, .btn-rounded {
+  border-radius: 9999px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0px) scale(0.97);
+}

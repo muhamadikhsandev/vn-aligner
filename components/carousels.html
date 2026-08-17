@@ -1,0 +1,59 @@
+<!-- CAROUSEL BOTTOM CANVAS -->
+<div x-show="isReady" class="w-full border-t border-slate-800/80 pt-1.5 mt-1 shrink-0 flex flex-col gap-1.5">
+  
+  <!-- Badan Carousel -->
+  <div x-show="bodyAssetList.length > 0" class="flex flex-col">
+    <div class="flex items-center justify-between text-[10px] text-slate-400 px-1 mb-0.5">
+      <div class="flex items-center gap-1.5">
+        <span class="font-medium text-blue-300 flex items-center gap-1">
+          <i data-lucide="user" class="w-3.5 h-3.5 text-blue-400"></i> Badan:
+        </span>
+        <button @click="togglePlayBody()" class="px-2 py-0.5 rounded text-[9px] font-semibold text-white cursor-pointer"
+                :class="isPlayingBody ? 'bg-rose-600 animate-pulse' : 'bg-blue-600'">
+          <span x-text="isPlayingBody ? 'Stop' : 'Play'"></span>
+        </button>
+      </div>
+      <span class="font-mono text-blue-400 font-bold" x-text="`${activeBodyIndex + 1}/${bodyAssetList.length}`"></span>
+    </div>
+    <div class="flex items-center gap-2 overflow-x-auto pb-1 px-1 no-scrollbar">
+      <template x-for="(item, index) in bodyAssetList" :key="item.id">
+        <div @click="selectBody(index)" 
+             class="relative flex-shrink-0 border cursor-pointer rounded-lg overflow-hidden bg-slate-950 flex flex-col items-center"
+             :class="index === activeBodyIndex ? 'border-blue-400 ring-2 ring-blue-500/50 scale-105' : 'border-slate-800 opacity-60'">
+          <div class="w-10 h-10 overflow-hidden">
+            <img :src="item.thumb" class="w-full h-full object-cover" />
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Wajah Carousel -->
+  <div x-show="faceAssetList.length > 0" class="flex flex-col">
+    <div class="flex items-center justify-between text-[10px] text-slate-400 px-1 mb-0.5">
+      <div class="flex items-center gap-1.5">
+        <span class="font-medium text-emerald-300 flex items-center gap-1">
+          <i data-lucide="smile" class="w-3.5 h-3.5 text-emerald-400"></i> Wajah:
+        </span>
+        <button @click="togglePlayFace()" class="px-2 py-0.5 rounded text-[9px] font-semibold text-white cursor-pointer"
+                :class="isPlayingFace ? 'bg-rose-600 animate-pulse' : 'bg-emerald-600'">
+          <span x-text="isPlayingFace ? 'Stop' : 'Play'"></span>
+        </button>
+      </div>
+      <span class="font-mono text-emerald-400 font-bold" x-text="`${activeFaceIndex + 1}/${faceAssetList.length}`"></span>
+    </div>
+    
+    <div class="flex items-center gap-2 overflow-x-auto pb-1 px-1 no-scrollbar">
+      <template x-for="(item, index) in faceAssetList" :key="item.id">
+        <div @click="selectFace(index)" 
+             class="relative flex-shrink-0 border cursor-pointer rounded-lg overflow-hidden bg-slate-950 flex flex-col items-center"
+             :class="index === activeFaceIndex ? 'border-emerald-500 ring-2 ring-emerald-500/50 scale-105' : 'border-slate-800 opacity-60'">
+          <div class="w-10 h-10 overflow-hidden">
+            <img :src="item.thumb" class="w-full h-full object-cover" />
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,107 @@
+<!-- COMPONENT: PREVIEW CANVAS -->
+<div class="lg:col-span-8 flex-1 flex flex-col relative overflow-hidden h-full w-full min-h-0">
+
+  <!-- CANVAS VIEWPORT CONTAINER -->
+  <div class="relative flex-1 w-full h-full flex flex-col overflow-hidden border border-slate-800 rounded-xl bg-slate-950 p-1.5 min-h-0 shadow-2xl">
+    
+    <!-- TOP TOOLBAR OVERLAY -->
+    <div class="w-full flex items-center justify-between mb-1 px-1 shrink-0 gap-1.5 z-20 flex-wrap">
+      <div class="flex items-center gap-1.5">
+        <span class="text-[10px] bg-slate-900/90 text-blue-300 border border-blue-800/60 px-2 py-0.5 rounded-md font-medium flex items-center gap-1">
+          <i data-lucide="sparkles" class="w-3 h-3 text-blue-400"></i> Live Preview
+        </span>
+
+        <button @click="showGuidelines = !showGuidelines; renderPreview()" 
+                class="text-[10px] px-2 py-0.5 rounded-md font-semibold border transition-all cursor-pointer flex items-center gap-1"
+                :class="showGuidelines ? 'bg-cyan-950/90 text-cyan-300 border-cyan-700' : 'bg-slate-900/90 text-slate-400 border-slate-800'">
+          <i data-lucide="crosshair" class="w-3 h-3"></i> Garis Presisi
+        </button>
+
+        <button @click="activeTab = 'box'; renderPreview()" 
+                class="text-[10px] px-2 py-0.5 rounded-md font-semibold border transition-all cursor-pointer flex items-center gap-1"
+                :class="activeTab === 'box' ? 'bg-cyan-600 text-white border-cyan-400 shadow' : 'bg-slate-900/90 text-slate-300 border-slate-700'">
+          <i data-lucide="box" class="w-3 h-3 text-cyan-400"></i> Mode Box
+        </button>
+
+        <span x-show="isDragging" class="text-[10px] bg-blue-950/90 text-blue-400 border border-blue-700 px-1.5 py-0.5 rounded-md font-semibold flex items-center gap-1 truncate">
+          <i data-lucide="pen-tool" class="w-3 h-3"></i> <span x-text="dragMode.startsWith('resize_') ? 'Skala' : 'Trans'"></span>
+        </span>
+      </div>
+
+      <!-- Custom Zoom Dropdown -->
+      <div class="relative" @click.outside="isZoomDropdownOpen = false">
+        <button @click="isZoomDropdownOpen = !isZoomDropdownOpen" type="button" 
+                class="bg-slate-900 border border-slate-700/80 text-slate-200 text-xs font-bold rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 cursor-pointer">
+          <i data-lucide="zoom-in" class="w-3.5 h-3.5 text-blue-400"></i>
+          <span x-text="`${camZoomPercent}%`"></span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+        </button>
+
+        <div x-show="isZoomDropdownOpen" class="absolute right-0 mt-1 w-28 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-50 py-1">
+          <template x-for="item in zoomPresets" :key="item.value">
+            <div @click="setCameraPreset(item.value); isZoomDropdownOpen = false" 
+                 class="px-3 py-1.5 text-xs font-semibold cursor-pointer flex items-center justify-between hover:bg-slate-800"
+                 :class="camZoom === item.value ? 'bg-blue-600/30 text-blue-300 border-l-2 border-blue-500' : 'text-slate-300'">
+              <span x-text="item.label"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- CANVAS VIEWPORT AREA -->
+    <div class="flex-1 flex w-full h-full min-h-0 relative overflow-hidden checkerboard-bg rounded-lg border border-slate-800/60">
+      <div class="flex-1 relative flex items-center justify-center overflow-hidden">
+        <div x-show="!isReady" class="absolute inset-0 flex flex-col items-center justify-center text-center p-2 z-10 pointer-events-none">
+          <i data-lucide="layers" class="w-8 h-8 text-slate-400 mb-2 opacity-60"></i>
+          <p class="text-slate-300 text-xs font-medium max-w-[200px] bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800 backdrop-blur">
+            Upload foto badan & aset wajah untuk mulai
+          </p>
+        </div>
+        
+        <div x-show="isReady" class="preview-camera-container flex items-center justify-center m-auto shrink-0 relative h-full w-full"
+             :style="`transform: scale(${camZoom}) translate(${camPanX}px, ${camPanY}px);`">
+          <canvas id="previewCanvas" 
+                  @mousedown="handlePointerDown($event)"
+                  @touchstart="handlePointerDown($event)"
+                  class="max-w-full max-h-full object-contain touch-none cursor-pen-edit"></canvas>
+        </div>
+      </div>
+
+      <!-- VERTICAL CUSTOM SCROLLBAR -->
+      <div x-show="isReady" class="w-7 shrink-0 flex flex-col items-center bg-slate-950/90 border-l border-slate-800/80 p-0.5 gap-1 z-20">
+        <button @click="panCamera(0, -30)" class="p-1 bg-slate-900 hover:bg-blue-600 text-slate-300 rounded cursor-pointer transition-colors" title="Pan Ke Atas">
+          <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+        </button>
+        <div class="flex-1 w-full flex items-center justify-center py-1 overflow-hidden">
+          <input type="range" min="-800" max="800" :value="camPanY" 
+                 @input="camPanY = parseInt($event.target.value)" 
+                 class="h-full accent-blue-500 bg-slate-900 rounded cursor-pointer range-vertical"
+                 title="Scroll Vertikal Canvas">
+        </div>
+        <button @click="panCamera(0, 30)" class="p-1 bg-slate-900 hover:bg-blue-600 text-slate-300 rounded cursor-pointer transition-colors" title="Pan Ke Bawah">
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- HORIZONTAL CUSTOM SCROLLBAR -->
+    <div x-show="isReady" class="h-7 shrink-0 w-full flex items-center bg-slate-900/90 border-t border-slate-800/80 px-1 gap-1.5 z-20 mt-1">
+      <button @click="panCamera(-30, 0)" class="p-1 bg-slate-950 hover:bg-blue-600 text-slate-300 rounded cursor-pointer transition-colors" title="Pan Ke Kiri">
+        <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+      </button>
+      <input type="range" min="-800" max="800" :value="camPanX" 
+             @input="camPanX = parseInt($event.target.value)" 
+             class="flex-1 accent-blue-500 bg-slate-950 h-2 rounded cursor-pointer"
+             title="Scroll Horisontal Canvas">
+      <button @click="panCamera(30, 0)" class="p-1 bg-slate-950 hover:bg-blue-600 text-slate-300 rounded cursor-pointer transition-colors" title="Pan Ke Kanan">
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+      </button>
+      <button @click="resetCameraPan()" 
+              class="p-1 bg-blue-950 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-800/60 rounded cursor-pointer transition-all flex items-center justify-center ml-1" 
+              title="Reset ke Center (Tengah)">
+        <i data-lucide="crosshair" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+</div>
